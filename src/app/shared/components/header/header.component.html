@@ -1,0 +1,37 @@
+<header class="header">
+  <div class="container header__inner">
+    <a class="header__logo" routerLink="/" (click)="closeMenu()">
+      <span class="header__logo-icon" aria-hidden="true">GF</span>
+      <span class="header__logo-text">GranaFlow</span>
+    </a>
+
+    <button
+      class="header__toggle"
+      type="button"
+      [attr.aria-expanded]="menuOpen()"
+      aria-controls="main-nav"
+      aria-label="Abrir menu de navegação"
+      (click)="toggleMenu()"
+    >
+      <span class="header__toggle-bar"></span>
+      <span class="header__toggle-bar"></span>
+      <span class="header__toggle-bar"></span>
+    </button>
+
+    <nav class="header__nav" id="main-nav" [class.header__nav--open]="menuOpen()">
+      <a class="header__link" href="#como-funciona" (click)="closeMenu()">Como funciona</a>
+      <a class="header__link" href="#funcionalidades" (click)="closeMenu()">Funcionalidades</a>
+      <a class="header__link" href="#seguranca" (click)="closeMenu()">Segurança</a>
+
+      @if (authService.isAuthenticated()) {
+        <span class="header__user">Olá, {{ authService.user()?.nome }}</span>
+        <button class="header__link header__link--ghost header__logout" type="button" (click)="logout()">
+          Sair
+        </button>
+      } @else {
+        <a class="header__link header__link--ghost" routerLink="/login" (click)="closeMenu()">Entrar</a>
+        <a class="header__link header__link--cta" routerLink="/cadastro" (click)="closeMenu()">Começar agora</a>
+      }
+    </nav>
+  </div>
+</header>
