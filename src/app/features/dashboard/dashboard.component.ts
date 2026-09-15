@@ -1,8 +1,9 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
 import { formatCurrency, formatDate, isReceita } from '../../core/utils/format.utils';
+import { DashboardRealtimeService } from './dashboard-realtime.service';
 import { DashboardService } from './dashboard.service';
 import { DashboardSummary, RecentTransaction } from './models/dashboard.models';
 
@@ -20,8 +21,9 @@ interface NavItem {
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css',
 })
-export class DashboardComponent implements OnInit {
+export class DashboardComponent implements OnInit, OnDestroy {
   private readonly dashboardService = inject(DashboardService);
+  private readonly dashboardRealtime = inject(DashboardRealtimeService);
   protected readonly authService = inject(AuthService);
   private readonly router = inject(Router);
 
@@ -47,10 +49,17 @@ export class DashboardComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadDashboard();
+    this.dashboardRealtime.connect(() => this.loadDashboard(true));
   }
 
-  loadDashboard(): void {
-    this.loading.set(true);
+  ngOnDestroy(): void {
+    this.dashboardRealtime.disconnect();
+  }
+
+  loadDashboard(silent = false): void {
+    if (!silent) {
+      this.loading.set(true);
+    }
     this.error.set(null);
 
     forkJoin({

@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import {
   AbstractControl,
   FormBuilder,
@@ -6,7 +6,7 @@ import {
   ValidationErrors,
   Validators,
 } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AuthService } from '../../../core/services/auth.service';
 import { ApiErrorResponse } from '../../../core/models/auth.models';
@@ -19,9 +19,10 @@ const MIN_PASSWORD_LENGTH = 8;
   templateUrl: './link-telegram.component.html',
   styleUrl: './link-telegram.component.css',
 })
-export class LinkTelegramComponent {
+export class LinkTelegramComponent implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   private readonly fb = inject(FormBuilder);
 
   protected readonly loading = signal(false);
@@ -39,6 +40,20 @@ export class LinkTelegramComponent {
     },
     { validators: [passwordsMatchValidator] },
   );
+
+  ngOnInit(): void {
+    const params = this.route.snapshot.queryParamMap;
+    const conviteCode =
+      params.get('conviteCode') ?? params.get('codigo') ?? params.get('convite') ?? '';
+    const nome = params.get('nome') ?? '';
+
+    if (conviteCode || nome) {
+      this.form.patchValue({
+        conviteCode: conviteCode.trim(),
+        nome: nome.trim(),
+      });
+    }
+  }
 
   togglePasswordVisibility(): void {
     this.showPassword.update((visible) => !visible);
