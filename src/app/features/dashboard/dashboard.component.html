@@ -1,152 +1,107 @@
-<div class="dashboard" [class.dashboard--sidebar-open]="sidebarOpen()">
-  @if (sidebarOpen()) {
-    <button
-      class="dashboard__overlay"
-      type="button"
-      aria-label="Fechar menu"
-      (click)="closeSidebar()"
-    ></button>
-  }
-
-  <aside class="dashboard__sidebar" aria-label="Navegação principal">
-    <div class="dashboard__brand">
-      <span class="dashboard__brand-icon" aria-hidden="true">GF</span>
-      <span class="dashboard__brand-text">GranaFlow</span>
+<div class="ledger-page">
+  @if (loading()) {
+    <div class="dashboard__skeleton" aria-busy="true" aria-label="Carregando dashboard">
+      <div class="skeleton skeleton--hero"></div>
+      <div class="skeleton skeleton--row"></div>
+      <div class="skeleton skeleton--list"></div>
     </div>
-
-    <nav class="dashboard__nav">
-      @for (item of navItems; track item.label) {
-        @if (item.route && !item.disabled) {
-          <a
-            class="dashboard__nav-item"
-            [class.dashboard__nav-item--active]="item.active"
-            [routerLink]="item.route"
-            (click)="closeSidebar()"
-          >
-            <span class="dashboard__nav-icon" aria-hidden="true">{{ item.icon }}</span>
-            <span>{{ item.label }}</span>
-          </a>
-        } @else {
-          <span
-            class="dashboard__nav-item dashboard__nav-item--disabled"
-            [class.dashboard__nav-item--active]="item.active"
-            aria-disabled="true"
-          >
-            <span class="dashboard__nav-icon" aria-hidden="true">{{ item.icon }}</span>
-            <span>{{ item.label }}</span>
-          </span>
-        }
-      }
-    </nav>
-  </aside>
-
-  <div class="dashboard__main">
-    <header class="dashboard__topbar">
-      <button
-        class="dashboard__menu-toggle"
-        type="button"
-        aria-label="Abrir menu"
-        (click)="toggleSidebar()"
-      >
-        <span></span>
-        <span></span>
-        <span></span>
+  } @else if (error()) {
+    <div class="dashboard__state dashboard__state--error" role="alert">
+      <h2>Não conseguimos carregar seus dados</h2>
+      <p>{{ error() }}</p>
+      <button class="btn btn--primary" type="button" (click)="loadDashboard()">
+        Tentar novamente
       </button>
+    </div>
+  } @else {
+    @if (summary(); as data) {
+      <section class="balance-hero gf-panel" aria-label="Saldo e resumo">
+        <div class="balance-hero__primary">
+          <span class="balance-hero__label">Saldo disponível</span>
+          <p class="balance-hero__amount tabular-nums">{{ formatCurrency(data.saldo) }}</p>
+          <p class="balance-hero__hint">
+            {{ data.quantidadeTransacoes }}
+            {{ data.quantidadeTransacoes === 1 ? 'movimentação' : 'movimentações' }} no período
+          </p>
+        </div>
 
-      <div class="dashboard__topbar-user">
-        <span class="dashboard__topbar-name">{{ authService.user()?.nome }}</span>
-        <button class="dashboard__logout" type="button" (click)="logout()">Sair</button>
-      </div>
-    </header>
-
-    <main class="dashboard__content">
-      <section class="dashboard__welcome">
-        <h1>Olá, {{ authService.user()?.nome }} 👋</h1>
-        <p>Acompanhe suas finanças em um só lugar.</p>
+        <dl class="balance-hero__metrics">
+          <div class="balance-hero__metric balance-hero__metric--income">
+            <dt>Receitas</dt>
+            <dd class="tabular-nums">{{ formatCurrency(data.receitas) }}</dd>
+          </div>
+          <div class="balance-hero__metric balance-hero__metric--expense">
+            <dt>Despesas</dt>
+            <dd class="tabular-nums">{{ formatCurrency(data.gastos) }}</dd>
+          </div>
+        </dl>
       </section>
+    }
 
-      @if (loading()) {
-        <div class="dashboard__skeleton" aria-busy="true" aria-label="Carregando dashboard">
-          <div class="skeleton skeleton--balance"></div>
-          <div class="dashboard__cards dashboard__cards--skeleton">
-            <div class="skeleton skeleton--card"></div>
-            <div class="skeleton skeleton--card"></div>
-            <div class="skeleton skeleton--card"></div>
-          </div>
-          <div class="skeleton skeleton--list"></div>
+    <div class="dashboard__grid">
+      <section class="movements gf-panel" aria-label="Últimos gastos">
+        <div class="movements__header">
+          <h2>Últimos gastos</h2>
+          <p>As três despesas mais recentes nas contas que você acessa.</p>
         </div>
-      } @else if (error()) {
-        <div class="dashboard__error" role="alert">
-          <p>{{ error() }}</p>
-          <button class="btn btn--primary" type="button" (click)="loadDashboard()">
-            Tentar novamente
-          </button>
-        </div>
-      } @else {
-        @if (summary(); as data) {
-          <section class="dashboard__balance-card" aria-label="Saldo atual">
-            <span class="dashboard__balance-label">Saldo atual</span>
-            <strong class="dashboard__balance-value">{{ formatCurrency(data.saldo) }}</strong>
-          </section>
 
-          <section class="dashboard__cards" aria-label="Resumo financeiro">
-            <article class="summary-card summary-card--income">
-              <span class="summary-card__icon" aria-hidden="true">↑</span>
-              <div>
-                <span class="summary-card__label">Receitas</span>
-                <strong class="summary-card__value">{{ formatCurrency(data.receitas) }}</strong>
-              </div>
-            </article>
-
-            <article class="summary-card summary-card--expense">
-              <span class="summary-card__icon" aria-hidden="true">↓</span>
-              <div>
-                <span class="summary-card__label">Despesas</span>
-                <strong class="summary-card__value">{{ formatCurrency(data.gastos) }}</strong>
-              </div>
-            </article>
-
-            <article class="summary-card summary-card--neutral">
-              <span class="summary-card__icon" aria-hidden="true">#</span>
-              <div>
-                <span class="summary-card__label">Transações</span>
-                <strong class="summary-card__value">{{ data.quantidadeTransacoes }}</strong>
-              </div>
-            </article>
-          </section>
-        }
-
-        <section class="dashboard__transactions" aria-label="Transações recentes">
-          <div class="dashboard__section-header">
-            <h2>Transações recentes</h2>
+        @if (recentExpenses().length === 0) {
+          <div class="dashboard__state dashboard__state--empty">
+            <h3>Nenhum gasto recente</h3>
+            <p>Registre uma despesa pelo Telegram para vê-la aqui.</p>
           </div>
-
-          @if (transactions().length === 0) {
-            <p class="dashboard__empty">Nenhuma transação encontrada.</p>
-          } @else {
-            <ul class="transaction-list">
-              @for (transaction of transactions(); track transaction.id) {
-                <li
-                  class="transaction-item"
-                  [class.transaction-item--income]="isReceita(transaction.tipo)"
-                  [class.transaction-item--expense]="!isReceita(transaction.tipo)"
-                >
-                  <div class="transaction-item__info">
-                    <strong class="transaction-item__title">{{ transaction.descricao }}</strong>
-                    @if (transactionMeta(transaction); as meta) {
-                      <span class="transaction-item__meta">{{ meta }}</span>
-                    }
-                    <time class="transaction-item__date" [dateTime]="transaction.data">
+        } @else {
+          <ul class="movements__list">
+            @for (transaction of recentExpenses(); track transaction.id) {
+              <li class="movement movement--expense">
+                <span class="movement__indicator" aria-hidden="true"></span>
+                <div class="movement__body">
+                  <div class="movement__row">
+                    <span class="movement__type">Despesa</span>
+                    <time class="movement__date" [dateTime]="transaction.data">
                       {{ formatDate(transaction.data) }}
                     </time>
                   </div>
-                  <span class="transaction-item__amount">{{ signedAmount(transaction) }}</span>
-                </li>
-              }
-            </ul>
-          }
-        </section>
-      }
-    </main>
-  </div>
+                  <p class="movement__title">{{ transaction.descricao }}</p>
+                  @if (transactionMeta(transaction); as meta) {
+                    <p class="movement__meta">{{ meta }}</p>
+                  }
+                </div>
+                <span class="movement__amount tabular-nums">{{ signedAmount(transaction) }}</span>
+              </li>
+            }
+          </ul>
+        }
+      </section>
+
+      <aside class="expense-chart gf-panel" aria-label="Despesas por categoria">
+        <div class="expense-chart__header">
+          <h2>Despesas por categoria</h2>
+          <p>Com base nas despesas das movimentações recentes.</p>
+        </div>
+
+        @if (categoryExpenses().length === 0) {
+          <div class="expense-chart__empty">
+            <p>Sem despesas recentes para exibir a distribuição.</p>
+          </div>
+        } @else {
+          <ul class="expense-chart__list">
+            @for (item of categoryExpenses(); track item.label) {
+              <li class="expense-chart__row">
+                <div class="expense-chart__meta">
+                  <span class="expense-chart__label">{{ item.label }}</span>
+                  <span class="expense-chart__value tabular-nums">{{
+                    formatCurrency(item.total)
+                  }}</span>
+                </div>
+                <div class="expense-chart__track" aria-hidden="true">
+                  <span class="expense-chart__bar" [style.width.%]="item.barPercent"></span>
+                </div>
+              </li>
+            }
+          </ul>
+        }
+      </aside>
+    </div>
+  }
 </div>

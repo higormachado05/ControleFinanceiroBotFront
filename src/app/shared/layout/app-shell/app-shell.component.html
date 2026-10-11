@@ -1,0 +1,73 @@
+<div class="app-shell" [class.app-shell--sidebar-open]="sidebarOpen()">
+  @if (sidebarOpen()) {
+    <button
+      class="app-shell__overlay"
+      type="button"
+      aria-label="Fechar menu"
+      (click)="closeSidebar()"
+    ></button>
+  }
+
+  <aside class="app-shell__sidebar" aria-label="Navegação principal">
+    <div class="app-shell__brand">
+      <app-brand-logo variant="sidebar" [lazy]="false" />
+    </div>
+
+    <nav class="app-shell__nav">
+      @for (item of navItems; track item.label) {
+        @if (item.route && !item.disabled) {
+          <a
+            class="app-shell__nav-link"
+            [routerLink]="item.route"
+            routerLinkActive="app-shell__nav-link--active"
+            [routerLinkActiveOptions]="{ exact: true }"
+            (click)="closeSidebar()"
+            #navLink="routerLinkActive"
+          >
+            <app-nav-icon [name]="item.icon" [active]="navLink.isActive" />
+            <span>{{ item.label }}</span>
+          </a>
+        } @else {
+          <span
+            class="app-shell__nav-link app-shell__nav-link--disabled"
+            aria-disabled="true"
+            title="Em breve"
+          >
+            <app-nav-icon [name]="item.icon" />
+            <span>{{ item.label }}</span>
+            <span class="app-shell__nav-soon">Em breve</span>
+          </span>
+        }
+      }
+    </nav>
+  </aside>
+
+  <div class="app-shell__workspace">
+    <header class="app-shell__header">
+      <button
+        class="app-shell__menu-btn"
+        type="button"
+        aria-label="Abrir menu"
+        (click)="toggleSidebar()"
+      >
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+
+      <div class="app-shell__header-context">
+        <span class="app-shell__header-eyebrow">{{ headerEyebrow() }}</span>
+        <span class="app-shell__header-title">{{ headerTitle() }}</span>
+      </div>
+
+      <div class="app-shell__header-actions">
+        <span class="app-shell__user-name">{{ authService.user()?.nome }}</span>
+        <button class="app-shell__sign-out" type="button" (click)="logout()">Sair</button>
+      </div>
+    </header>
+
+    <main class="app-shell__content">
+      <router-outlet />
+    </main>
+  </div>
+</div>

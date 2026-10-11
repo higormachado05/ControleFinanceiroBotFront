@@ -1,0 +1,98 @@
+<div class="ledger-page">
+  @if (loading()) {
+    <div class="ledger-page__skeleton" aria-busy="true" aria-label="Carregando receitas">
+      <div class="skeleton skeleton--hero"></div>
+      <div class="skeleton skeleton--list"></div>
+    </div>
+  } @else if (error()) {
+    <div class="ledger-page__state ledger-page__state--error" role="alert">
+      <h2>Não conseguimos carregar suas receitas</h2>
+      <p>{{ error() }}</p>
+      <button class="btn btn--primary" type="button" (click)="loadData()">Tentar novamente</button>
+    </div>
+  } @else {
+    @if (summary(); as data) {
+      <section class="ledger-hero gf-panel ledger-hero--income" aria-label="Total de receitas">
+        <div class="ledger-hero__primary">
+          <span class="ledger-hero__label">Total de receitas</span>
+          <p class="ledger-hero__amount tabular-nums">{{ formatCurrency(data.receitas) }}</p>
+          <p class="ledger-hero__hint">
+            {{ incomeTransactions().length }}
+            {{ incomeTransactions().length === 1 ? 'lançamento recente' : 'lançamentos recentes' }}
+            nesta lista
+          </p>
+        </div>
+        <p class="ledger-hero__note">
+          Entradas registradas pelo Telegram ou fluxos vinculados à sua conta.
+        </p>
+      </section>
+    }
+
+    <div class="ledger-page__grid">
+      <section class="movements gf-panel" aria-label="Lista de receitas">
+        <div class="movements__header">
+          <h2>Receitas recentes</h2>
+          <p>Movimentações de entrada nas contas que você acessa.</p>
+          @if (listHint(); as hint) {
+            <p class="movements__limit-hint">{{ hint }}</p>
+          }
+        </div>
+
+        @if (incomeTransactions().length === 0) {
+          <div class="ledger-page__state ledger-page__state--empty">
+            <h3>Nenhuma receita registrada</h3>
+            <p>Quando você lançar uma receita pelo Telegram, ela será listada aqui.</p>
+          </div>
+        } @else {
+          <ul class="movements__list">
+            @for (transaction of displayedTransactions(); track transaction.id) {
+              <li class="movement movement--income">
+                <span class="movement__indicator" aria-hidden="true"></span>
+                <div class="movement__body">
+                  <div class="movement__row">
+                    <span class="movement__type">Receita</span>
+                    <time class="movement__date" [dateTime]="transaction.data">
+                      {{ formatDate(transaction.data) }}
+                    </time>
+                  </div>
+                  <p class="movement__title">{{ transaction.descricao }}</p>
+                  @if (transactionMeta(transaction); as meta) {
+                    <p class="movement__meta">{{ meta }}</p>
+                  }
+                </div>
+                <span class="movement__amount tabular-nums">{{ signedAmount(transaction) }}</span>
+              </li>
+            }
+          </ul>
+        }
+      </section>
+
+      <aside class="expense-chart gf-panel income-chart" aria-label="Receitas por categoria">
+        <div class="expense-chart__header">
+          <h2>Por categoria</h2>
+          <p>Distribuição das receitas recentes.</p>
+        </div>
+
+        @if (categoryBreakdown().length === 0) {
+          <div class="expense-chart__empty">
+            <p>Sem categorias para exibir ainda.</p>
+          </div>
+        } @else {
+          <ul class="expense-chart__list">
+            @for (item of categoryBreakdown(); track item.label) {
+              <li class="expense-chart__row">
+                <div class="expense-chart__meta">
+                  <span class="expense-chart__label">{{ item.label }}</span>
+                  <span class="expense-chart__value tabular-nums">{{ formatCurrency(item.total) }}</span>
+                </div>
+                <div class="expense-chart__track" aria-hidden="true">
+                  <span class="expense-chart__bar income-chart__bar" [style.width.%]="item.barPercent"></span>
+                </div>
+              </li>
+            }
+          </ul>
+        }
+      </aside>
+    </div>
+  }
+</div>

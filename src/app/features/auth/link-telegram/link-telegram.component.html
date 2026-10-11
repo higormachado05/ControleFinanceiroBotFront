@@ -1,134 +1,148 @@
-<div class="auth-page">
-  <div class="auth-card">
-    <a class="auth-card__back" routerLink="/login">← Voltar para o login</a>
-
-    <div class="auth-card__brand">
-      <span class="auth-card__logo" aria-hidden="true">GF</span>
-      <span class="auth-card__name">GranaFlow</span>
+<div class="auth-shell">
+  <aside class="auth-shell__brand" aria-hidden="true">
+    <div class="auth-shell__brand-mark">
+      <app-brand-logo variant="auth" [lazy]="false" />
     </div>
+    <div>
+      <p class="auth-shell__brand-headline">O mesmo histórico do Telegram, agora no navegador.</p>
+      <p class="auth-shell__brand-copy">
+        Vincule sua conta existente sem perder lançamentos — cada membro ativa com seu próprio e-mail.
+      </p>
+    </div>
+  </aside>
 
-    <h1 class="auth-card__title">Ativar conta do Telegram</h1>
-    <p class="auth-card__subtitle">
-      Para contas conjuntas, cada pessoa deve primeiro vincular no Telegram com
-      <strong>/vincular CÓDIGO</strong> e depois ativar aqui o próprio acesso web.
-      O mesmo código pode ser usado por todos os membros — cada um com seu nome e e-mail.
-    </p>
-
-    @if (apiError()) {
-      <div class="auth-alert auth-alert--error" role="alert">{{ apiError() }}</div>
-    }
-
-    <form class="auth-form" [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
-      <div class="form-field">
-        <label class="form-field__label" for="conviteCode">Código de convite</label>
-        <input
-          id="conviteCode"
-          class="form-field__input"
-          type="text"
-          formControlName="conviteCode"
-          autocomplete="off"
-          placeholder="Ex: ABC123"
-        />
-        @if (getFieldError('conviteCode'); as error) {
-          <span class="form-field__error">{{ error }}</span>
-        }
-      </div>
-
-      <div class="form-field">
-        <label class="form-field__label" for="nome">Nome no Telegram</label>
-        <input
-          id="nome"
-          class="form-field__input"
-          type="text"
-          formControlName="nome"
-          autocomplete="name"
-          placeholder="Seu nome no Telegram"
-        />
-        @if (getFieldError('nome'); as error) {
-          <span class="form-field__error">{{ error }}</span>
-        }
-      </div>
-
-      <div class="form-field">
-        <label class="form-field__label" for="email">E-mail</label>
-        <input
-          id="email"
-          class="form-field__input"
-          type="email"
-          formControlName="email"
-          autocomplete="email"
-          placeholder="seu@email.com"
-        />
-        @if (getFieldError('email'); as error) {
-          <span class="form-field__error">{{ error }}</span>
-        }
-      </div>
-
-      <div class="form-field">
-        <label class="form-field__label" for="password">Senha</label>
-        <div class="form-field__password">
-          <input
-            id="password"
-            class="form-field__input"
-            [type]="showPassword() ? 'text' : 'password'"
-            formControlName="password"
-            autocomplete="new-password"
-            placeholder="Crie uma senha"
-          />
-          <button
-            class="form-field__toggle"
-            type="button"
-            [attr.aria-label]="showPassword() ? 'Ocultar senha' : 'Mostrar senha'"
-            (click)="togglePasswordVisibility()"
-          >
-            {{ showPassword() ? 'Ocultar' : 'Mostrar' }}
-          </button>
+  <main class="auth-shell__main">
+    <div class="auth-shell__content">
+      <header class="auth-shell__mobile-top">
+        <a class="auth-panel__back" routerLink="/login">← Voltar</a>
+        <div class="auth-shell__mobile-brand">
+          <app-brand-logo variant="auth" [lazy]="false" />
         </div>
-        <span class="form-field__hint">
-          Mínimo 8 caracteres, com maiúscula, minúscula, número e caractere especial.
-        </span>
-        @if (getFieldError('password'); as error) {
-          <span class="form-field__error">{{ error }}</span>
-        }
-      </div>
+      </header>
 
-      <div class="form-field">
-        <label class="form-field__label" for="confirmPassword">Confirmar senha</label>
-        <div class="form-field__password">
+      <div class="auth-panel">
+      <h1 class="auth-panel__title">Ativar acesso web</h1>
+      <p class="auth-panel__subtitle">
+        Para contas conjuntas, use <strong>/vincular CÓDIGO</strong> no Telegram antes. Depois informe o
+        código, seu nome no Telegram, e-mail e senha.
+      </p>
+
+      @if (apiError()) {
+        <div class="auth-alert auth-alert--error" role="alert">{{ apiError() }}</div>
+      }
+
+      <form class="auth-form" [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+        <div class="form-field">
+          <label class="form-field__label" for="conviteCode">Código de convite</label>
           <input
-            id="confirmPassword"
+            id="conviteCode"
             class="form-field__input"
-            [type]="showConfirmPassword() ? 'text' : 'password'"
-            formControlName="confirmPassword"
-            autocomplete="new-password"
-            placeholder="Repita sua senha"
+            type="text"
+            formControlName="conviteCode"
+            autocomplete="off"
+            placeholder="Ex: ABC123"
           />
-          <button
-            class="form-field__toggle"
-            type="button"
-            [attr.aria-label]="showConfirmPassword() ? 'Ocultar senha' : 'Mostrar senha'"
-            (click)="toggleConfirmPasswordVisibility()"
-          >
-            {{ showConfirmPassword() ? 'Ocultar' : 'Mostrar' }}
-          </button>
+          @if (getFieldError('conviteCode'); as error) {
+            <span class="form-field__error">{{ error }}</span>
+          }
         </div>
-        @if (getFieldError('confirmPassword'); as error) {
-          <span class="form-field__error">{{ error }}</span>
-        }
+
+        <div class="form-field">
+          <label class="form-field__label" for="nome">Nome no Telegram</label>
+          <input
+            id="nome"
+            class="form-field__input"
+            type="text"
+            formControlName="nome"
+            autocomplete="name"
+            placeholder="Seu nome no Telegram"
+          />
+          @if (getFieldError('nome'); as error) {
+            <span class="form-field__error">{{ error }}</span>
+          }
+        </div>
+
+        <div class="form-field">
+          <label class="form-field__label" for="email">E-mail</label>
+          <input
+            id="email"
+            class="form-field__input"
+            type="email"
+            formControlName="email"
+            autocomplete="email"
+            placeholder="seu@email.com"
+          />
+          @if (getFieldError('email'); as error) {
+            <span class="form-field__error">{{ error }}</span>
+          }
+        </div>
+
+        <div class="form-field">
+          <label class="form-field__label" for="password">Senha</label>
+          <div class="form-field__password">
+            <input
+              id="password"
+              class="form-field__input"
+              [type]="showPassword() ? 'text' : 'password'"
+              formControlName="password"
+              autocomplete="new-password"
+              placeholder="Crie uma senha"
+            />
+            <button
+              class="form-field__toggle"
+              type="button"
+              [attr.aria-label]="showPassword() ? 'Ocultar senha' : 'Mostrar senha'"
+              (click)="togglePasswordVisibility()"
+            >
+              {{ showPassword() ? 'Ocultar' : 'Mostrar' }}
+            </button>
+          </div>
+          <span class="form-field__hint">
+            Mínimo 8 caracteres, com maiúscula, minúscula, número e caractere especial.
+          </span>
+          @if (getFieldError('password'); as error) {
+            <span class="form-field__error">{{ error }}</span>
+          }
+        </div>
+
+        <div class="form-field">
+          <label class="form-field__label" for="confirmPassword">Confirmar senha</label>
+          <div class="form-field__password">
+            <input
+              id="confirmPassword"
+              class="form-field__input"
+              [type]="showConfirmPassword() ? 'text' : 'password'"
+              formControlName="confirmPassword"
+              autocomplete="new-password"
+              placeholder="Repita sua senha"
+            />
+            <button
+              class="form-field__toggle"
+              type="button"
+              [attr.aria-label]="showConfirmPassword() ? 'Ocultar senha' : 'Mostrar senha'"
+              (click)="toggleConfirmPasswordVisibility()"
+            >
+              {{ showConfirmPassword() ? 'Ocultar' : 'Mostrar' }}
+            </button>
+          </div>
+          @if (getFieldError('confirmPassword'); as error) {
+            <span class="form-field__error">{{ error }}</span>
+          }
+        </div>
+
+        <button class="btn btn--primary auth-form__submit" type="submit" [disabled]="loading()">
+          @if (loading()) {
+            Ativando...
+          } @else {
+            Ativar e entrar
+          }
+        </button>
+      </form>
+
+      <p class="auth-panel__footer">
+        Conta nova? <a routerLink="/cadastro">Criar conta</a>
+      </p>
       </div>
-
-      <button class="btn btn--primary auth-form__submit" type="submit" [disabled]="loading()">
-        @if (loading()) {
-          Ativando conta...
-        } @else {
-          Ativar e entrar
-        }
-      </button>
-    </form>
-
-    <p class="auth-card__footer">
-      Conta nova?
-      <a routerLink="/cadastro">Criar conta</a>
-    </p>
-  </div>
+    </div>
+  </main>
 </div>

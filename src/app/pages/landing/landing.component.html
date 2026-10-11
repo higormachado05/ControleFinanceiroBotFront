@@ -1,217 +1,166 @@
 <app-header />
 
 <main>
-  <!-- Hero -->
   <section class="hero" id="inicio">
-    <div class="container hero__grid">
-      <div class="hero__content">
-        <span class="hero__brand">GranaFlow</span>
-        <h1 class="hero__title">Organize seu dinheiro. Conquiste seus objetivos.</h1>
-        <p class="hero__subtitle">
-          Tenha seus gastos, receitas, contas e objetivos financeiros organizados em um só lugar.
-        </p>
-        <div class="hero__actions">
-          <a class="btn btn--primary" routerLink="/cadastro">Começar agora</a>
-          <a class="btn btn--secondary" href="#funcionalidades">Conhecer o GranaFlow</a>
-        </div>
-      </div>
-
-      <div class="hero__visual" aria-hidden="true">
-        <div class="hero__card hero__card--telegram">
-          <div class="mock-chat">
-            <div class="mock-chat__bubble mock-chat__bubble--user">
-              <span class="mock-chat__label">Você</span>
-              Mercado 85 reais
-            </div>
-            <div class="mock-chat__bubble mock-chat__bubble--bot">
-              <span class="mock-chat__label">Sistema</span>
-              ✓ Gasto registrado<br />
-              Mercado<br />
-              <strong>-R$ 85,00</strong>
-            </div>
-          </div>
-        </div>
-        <div class="hero__card hero__card--dashboard">
-          <div class="mini-dashboard">
-            <div class="mini-dashboard__item mini-dashboard__item--income">
-              <span>Receitas</span>
-              <strong>R$ 5.200</strong>
-            </div>
-            <div class="mini-dashboard__item mini-dashboard__item--expense">
-              <span>Gastos</span>
-              <strong>R$ 3.850</strong>
-            </div>
-            <div class="mini-dashboard__item mini-dashboard__item--balance">
-              <span>Saldo</span>
-              <strong>R$ 1.350</strong>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Como funciona -->
-  <section class="section" id="como-funciona">
-    <div class="container">
-      <div class="section__header">
-        <span class="section__eyebrow">Como funciona</span>
-        <h2 class="section__title">Três passos para ter controle total</h2>
-        <p class="section__description">
-          Do registro rápido à visualização completa no painel GranaFlow.
-        </p>
-      </div>
-
-      <div class="steps">
-        @for (step of steps; track step.number) {
-          <article class="step-card">
-            <span class="step-card__number">{{ step.number }}</span>
-            <h3 class="step-card__title">{{ step.title }}</h3>
-            <p class="step-card__description">{{ step.description }}</p>
-            @if (step.highlight) {
-              <div class="step-card__example">
-                <code>{{ step.highlight }}</code>
-              </div>
-            }
-          </article>
-        }
-      </div>
-    </div>
-  </section>
-
-  <!-- Funcionalidades -->
-  <section class="section section--muted" id="funcionalidades">
-    <div class="container">
-      <div class="section__header">
-        <span class="section__eyebrow">Funcionalidades</span>
-        <h2 class="section__title">Tudo que você precisa para organizar seu dinheiro</h2>
-        <p class="section__description">
-          Ferramentas pensadas para simplificar a gestão financeira do dia a dia.
-        </p>
-      </div>
-
-      <div class="features">
-        @for (feature of features; track feature.title) {
-          <article class="feature-card">
-            <span class="feature-card__icon" aria-hidden="true">{{ feature.icon }}</span>
-            <h3 class="feature-card__title">{{ feature.title }}</h3>
-            <p class="feature-card__description">{{ feature.description }}</p>
-          </article>
-        }
-      </div>
-    </div>
-  </section>
-
-  <!-- Demonstração -->
-  <section class="section" id="demonstracao">
-    <div class="container">
-      <div class="section__header">
-        <span class="section__eyebrow">Demonstração</span>
-        <h2 class="section__title">GranaFlow e Telegram, conectados</h2>
-        <p class="section__description">
-          Registre pelo Telegram e veja tudo organizado no painel GranaFlow.
-        </p>
-      </div>
-
-      <div class="demo">
-        <div class="demo__panel demo__panel--telegram">
-          <div class="demo__panel-header">
-            <span class="demo__dot"></span>
-            <span class="demo__dot"></span>
-            <span class="demo__dot"></span>
-            <span>Telegram</span>
-          </div>
-          <div class="demo__panel-body">
-            <div class="demo-message demo-message--user">
-              <span class="demo-message__author">Você:</span>
-              Mercado 85 reais
-            </div>
-            <div class="demo-message demo-message--system">
-              <span class="demo-message__author">Sistema:</span>
-              ✓ Gasto registrado
-              <div class="demo-message__transaction">
-                <span>Mercado</span>
-                <strong>-R$ 85,00</strong>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="demo__connector" aria-hidden="true">
-          <span class="demo__connector-line"></span>
-          <span class="demo__connector-icon">→</span>
-        </div>
-
-        <div class="demo__panel demo__panel--dashboard">
-          <div class="demo__panel-header">
-            <span class="demo__dot"></span>
-            <span class="demo__dot"></span>
-            <span class="demo__dot"></span>
-            <span>Painel Web</span>
-          </div>
-          <div class="demo__panel-body">
-            <div class="dashboard-mock">
-              <div class="dashboard-mock__card dashboard-mock__card--income">
-                <span>Receitas</span>
-                <strong>R$ 5.200</strong>
-              </div>
-              <div class="dashboard-mock__card dashboard-mock__card--expense">
-                <span>Gastos</span>
-                <strong>R$ 3.850</strong>
-              </div>
-              <div class="dashboard-mock__card dashboard-mock__card--balance">
-                <span>Saldo</span>
-                <strong>R$ 1.350</strong>
-              </div>
-              <div class="dashboard-mock__chart">
-                <div class="dashboard-mock__bar" style="height: 60%"></div>
-                <div class="dashboard-mock__bar" style="height: 45%"></div>
-                <div class="dashboard-mock__bar" style="height: 75%"></div>
-                <div class="dashboard-mock__bar" style="height: 55%"></div>
-                <div class="dashboard-mock__bar" style="height: 80%"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Segurança -->
-  <section class="section section--muted" id="seguranca">
-    <div class="container">
-      <div class="security">
-        <div class="security__icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-            <path
-              d="M12 2l8 4v6c0 5.25-3.5 9.74-8 10-4.5-.26-8-4.75-8-10V6l8-4z"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-            <path d="M9 12l2 2 4-4" stroke-linecap="round" stroke-linejoin="round" />
-          </svg>
-        </div>
-        <div class="security__content">
-          <h2 class="security__title">Seus dados, protegidos.</h2>
-          <p class="security__text">
-            Suas informações financeiras devem ser privadas. O GranaFlow foi pensado para que cada
-            usuário tenha acesso somente aos seus próprios dados.
-          </p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- CTA final -->
-  <section class="section cta" id="cta">
-    <div class="container">
-      <div class="cta__card">
-        <h2 class="cta__title">Tenha mais controle sobre seu dinheiro.</h2>
-        <p class="cta__description">
-          Comece a organizar suas finanças com o GranaFlow e conquiste seus objetivos com clareza e
+    <div class="container hero__inner">
+      <div class="hero__copy">
+        <p class="hero__eyebrow">GranaFlow</p>
+        <h1 class="hero__title">Clareza financeira sem planilha na mão.</h1>
+        <p class="hero__lead">
+          O dinheiro some quando os lançamentos ficam espalhados. O GranaFlow concentra gastos e
+          receitas — pelo Telegram ou pelo navegador — para você enxergar saldo e movimentação com
           confiança.
         </p>
-        <a class="btn btn--primary btn--large cta__button" routerLink="/cadastro">Começar agora</a>
+        <div class="hero__actions">
+          <a class="btn btn--primary" routerLink="/cadastro">Criar conta</a>
+          <a class="btn btn--secondary" routerLink="/login">Já tenho conta</a>
+        </div>
+      </div>
+
+      <div class="hero__preview" aria-hidden="true">
+        <div class="preview-panel">
+          <div class="preview-panel__header">
+            <span>Saldo disponível</span>
+          </div>
+          <p class="preview-panel__balance tabular-nums">R$ 1.350,00</p>
+          <dl class="preview-panel__stats">
+            <div>
+              <dt>Receitas</dt>
+              <dd class="tabular-nums preview-panel__income">R$ 5.200</dd>
+            </div>
+            <div>
+              <dt>Despesas</dt>
+              <dd class="tabular-nums preview-panel__expense">R$ 3.850</dd>
+            </div>
+          </dl>
+          <ul class="preview-panel__list">
+            <li><span>Mercado</span><span class="tabular-nums">−R$ 85</span></li>
+            <li><span>Salário</span><span class="tabular-nums preview-panel__income">+R$ 5.200</span></li>
+          </ul>
+          <div class="preview-panel__chart" aria-hidden="true">
+            <span class="preview-panel__bar" style="height: 55%"></span>
+            <span class="preview-panel__bar" style="height: 72%"></span>
+            <span class="preview-panel__bar" style="height: 40%"></span>
+            <span class="preview-panel__bar" style="height: 65%"></span>
+            <span class="preview-panel__bar" style="height: 48%"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="como-funciona">
+    <div class="container">
+      <header class="section__intro">
+        <h2 class="section__title">Como funciona</h2>
+        <p class="section__lead">
+          Do registro rápido à visão completa — três passos, sem curva de aprendizado.
+        </p>
+      </header>
+
+      <ol class="steps">
+        @for (step of steps; track step.number) {
+          <li class="step">
+            <span class="step__index">{{ step.number }}</span>
+            <h3 class="step__title">{{ step.title }}</h3>
+            <p class="step__text">{{ step.description }}</p>
+            @if (step.highlight) {
+              <p class="step__example"><code>{{ step.highlight }}</code></p>
+            }
+          </li>
+        }
+      </ol>
+    </div>
+  </section>
+
+  <section class="section section--alt" id="funcionalidades">
+    <div class="container">
+      <header class="section__intro">
+        <h2 class="section__title">O que você controla</h2>
+        <p class="section__lead">
+          Ferramentas essenciais hoje — e espaço para evoluir sem poluir a interface.
+        </p>
+      </header>
+
+      <div class="feature-grid">
+        @for (feature of features; track feature.title) {
+          <article class="feature">
+            <span class="feature__tag">{{ feature.tag }}</span>
+            <h3 class="feature__title">{{ feature.title }}</h3>
+            <p class="feature__text">{{ feature.description }}</p>
+          </article>
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="demonstracao">
+    <div class="container">
+      <header class="section__intro">
+        <h2 class="section__title">Telegram e painel, conectados</h2>
+        <p class="section__lead">
+          Lance no chat e acompanhe saldo, categorias e movimentações no navegador.
+        </p>
+      </header>
+
+      <div class="product-demo">
+        <div class="product-demo__panel">
+          <div class="product-demo__panel-title">Telegram</div>
+          <p class="product-demo__message product-demo__message--user">
+            <span>Você</span> Mercado 85 reais
+          </p>
+          <p class="product-demo__message product-demo__message--bot">
+            <span>Sistema</span> Gasto registrado · Mercado · −R$ 85,00
+          </p>
+        </div>
+
+        <div class="product-demo__panel product-demo__panel--dashboard">
+          <div class="product-demo__panel-title">Painel web</div>
+          <div class="product-demo__metrics">
+            <div>
+              <span>Receitas</span>
+              <strong class="tabular-nums preview-panel__income">R$ 5.200</strong>
+            </div>
+            <div>
+              <span>Despesas</span>
+              <strong class="tabular-nums preview-panel__expense">R$ 3.850</strong>
+            </div>
+            <div>
+              <span>Saldo</span>
+              <strong class="tabular-nums">R$ 1.350</strong>
+            </div>
+          </div>
+          <div class="preview-panel__chart preview-panel__chart--demo">
+            <span class="preview-panel__bar" style="height: 60%"></span>
+            <span class="preview-panel__bar" style="height: 45%"></span>
+            <span class="preview-panel__bar" style="height: 75%"></span>
+            <span class="preview-panel__bar" style="height: 55%"></span>
+            <span class="preview-panel__bar" style="height: 80%"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--alt" id="seguranca">
+    <div class="container trust gf-panel">
+      <div class="trust__content">
+        <h2 class="trust__title">Seus dados, só seus.</h2>
+        <p class="trust__text">
+          Cada usuário acessa apenas as contas e movimentações permitidas — com autenticação segura
+          e separação entre ambiente web e Telegram.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--cta" id="cta">
+    <div class="container cta">
+      <h2 class="cta__title">Pronto para enxergar seu dinheiro com clareza?</h2>
+      <p class="cta__text">Crie sua conta em minutos ou ative o acesso web se já usa o Telegram.</p>
+      <div class="cta__actions">
+        <a class="btn btn--primary btn--large" routerLink="/cadastro">Começar agora</a>
+        <a class="btn btn--secondary btn--large" routerLink="/ativar-conta">Ativar via Telegram</a>
       </div>
     </div>
   </section>

@@ -9,13 +9,14 @@ import {
 import { Router, RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AuthService } from '../../../core/services/auth.service';
+import { BrandLogoComponent } from '../../../shared/components/brand-logo/brand-logo.component';
 import { ApiErrorResponse } from '../../../core/models/auth.models';
 
 const MIN_PASSWORD_LENGTH = 8;
 
 @Component({
   selector: 'app-register',
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, BrandLogoComponent],
   templateUrl: './register.component.html',
   styleUrl: './register.component.css',
 })

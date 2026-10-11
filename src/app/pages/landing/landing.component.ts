@@ -4,7 +4,7 @@ import { FooterComponent } from '../../shared/components/footer/footer.component
 import { HeaderComponent } from '../../shared/components/header/header.component';
 
 interface Feature {
-  icon: string;
+  tag: string;
   title: string;
   description: string;
 }
@@ -26,54 +26,55 @@ export class LandingComponent {
   protected readonly steps: Step[] = [
     {
       number: '01',
-      title: 'Registre de onde estiver',
+      title: 'Registre no Telegram',
       description:
-        'Use o Telegram ou o painel web para registrar suas movimentações em segundos.',
+        'Descreva gastos e receitas em linguagem natural. O GranaFlow interpreta e organiza para você.',
       highlight: 'Mercado 85 reais',
     },
     {
       number: '02',
-      title: 'Seus dados são organizados',
+      title: 'Confirme em segundos',
       description:
-        'O GranaFlow registra e organiza suas movimentações financeiras automaticamente.',
+        'Revise valor, categoria e descrição antes de salvar. Sem planilhas, sem fricção.',
     },
     {
       number: '03',
-      title: 'Acompanhe pelo painel',
-      description: 'Visualize gastos, receitas, saldo e evolução financeira em um só lugar.',
+      title: 'Veja tudo no painel',
+      description:
+        'Saldo, movimentações e contexto financeiro atualizados — inclusive em tempo real após cada lançamento.',
     },
   ];
 
   protected readonly features: Feature[] = [
     {
-      icon: '💸',
-      title: 'Controle de gastos',
-      description: 'Registre e acompanhe seus gastos.',
+      tag: 'Gastos',
+      title: 'Despesas sob controle',
+      description: 'Registre e acompanhe para onde o dinheiro está indo.',
     },
     {
-      icon: '💰',
-      title: 'Controle de receitas',
-      description: 'Tenha uma visão clara de tudo que entra.',
+      tag: 'Receitas',
+      title: 'Entradas visíveis',
+      description: 'Tenha clareza do que entra na sua conta ou na conta conjunta.',
     },
     {
-      icon: '📊',
-      title: 'Dashboard financeiro',
-      description: 'Visualize receitas, gastos, saldo e evolução.',
+      tag: 'Painel',
+      title: 'Visão consolidada',
+      description: 'Saldo e movimentações recentes em um único lugar.',
     },
     {
-      icon: '🤖',
-      title: 'Análise financeira',
-      description: 'Receba insights sobre seus hábitos financeiros.',
+      tag: 'Telegram',
+      title: 'Integração nativa',
+      description: 'Lance pelo app que você já usa no dia a dia.',
     },
     {
-      icon: '📱',
-      title: 'Integração com Telegram',
-      description: 'Registre movimentações rapidamente pelo Telegram.',
+      tag: 'Contas',
+      title: 'Pessoal e conjunta',
+      description: 'Cada membro vê o que importa, com regras de acesso claras.',
     },
     {
-      icon: '🎯',
-      title: 'Metas financeiras',
-      description: 'Defina objetivos e acompanhe sua evolução.',
+      tag: 'Metas',
+      title: 'Planejamento',
+      description: 'Em breve: objetivos financeiros com acompanhamento de progresso.',
     },
   ];
 }

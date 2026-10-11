@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 248 44" fill="none" role="img" aria-label="GranaFlow">
+  <title>GranaFlow</title>
+  <g transform="translate(0 1)">
+    <path
+      d="M9 3h24c2.8 0 5 2.2 5 5v16c0 2.8-2.2 5-5 5H19l-4.5 5.5L16 29H9c-2.8 0-5-2.2-5-5V8c0-2.8 2.2-5 5-5z"
+      stroke="#2e7d5f"
+      stroke-width="2.75"
+      stroke-linejoin="round"
+    />
+    <path
+      d="M12 24.5 17 19l4.5 3L26 13"
+      stroke="#f37021"
+      stroke-width="2.75"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+    <path
+      d="M23 13h4v4"
+      stroke="#f37021"
+      stroke-width="2.75"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+  </g>
+  <text
+    x="46"
+    y="30"
+    fill="#2e7d5f"
+    font-family="Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+    font-size="22"
+    font-weight="700"
+    letter-spacing="-0.02em"
+  >
+    GranaFlow
+  </text>
+</svg>
