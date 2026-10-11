@@ -17,20 +17,33 @@
         <p class="ledger-hero__amount tabular-nums">{{ formatCurrency(totalGastos()) }}</p>
         <p class="ledger-hero__hint">
           {{ items().length }}
-          {{ items().length === 1 ? 'lançamento exibido' : 'lançamentos exibidos' }}
-          com os filtros atuais
+          {{ items().length === 1 ? 'lançamento' : 'lançamentos' }}
+          em {{ monthLabel() }}
         </p>
       </div>
-      <p class="ledger-hero__note">
-        Registre novos gastos pelo Telegram. Os totais refletem conta e responsável selecionados.
-      </p>
+      <div class="ledger-hero__aside">
+        <label class="gastos-filters__field">
+          <span class="gastos-filters__label">Mês</span>
+          <input
+            class="gastos-filters__input"
+            type="month"
+            min="2020-01"
+            [max]="maxMonth()"
+            [ngModel]="monthInputValue()"
+            (ngModelChange)="onMonthInput($event)"
+          />
+        </label>
+        <p class="ledger-hero__note">
+          O total segue o mês, a conta e o responsável selecionados.
+        </p>
+      </div>
     </section>
 
     <section class="movements gf-panel" aria-label="Lista de despesas">
       <div class="movements__header gastos-filters">
         <div class="gastos-filters__intro">
           <h2>Gastos</h2>
-          <p>Despesas das contas que você pode acessar.</p>
+          <p>Despesas de {{ monthLabel() }} nas contas que você acessa.</p>
         </div>
 
         <div class="gastos-filters__controls">
@@ -85,8 +98,8 @@
 
       @if (items().length === 0) {
         <div class="ledger-page__state ledger-page__state--empty">
-          <h3>Nenhuma despesa encontrada</h3>
-          <p>Ajuste os filtros ou registre um gasto pelo Telegram.</p>
+          <h3>Nenhuma despesa em {{ monthLabel() }}</h3>
+          <p>Escolha outro mês ou registre um gasto pelo Telegram.</p>
         </div>
       } @else {
         <ul class="movements__list">

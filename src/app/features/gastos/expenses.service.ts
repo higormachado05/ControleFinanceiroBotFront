@@ -30,6 +30,10 @@ export class ExpensesService {
       params = params.set('search', query.search.trim());
     }
 
+    if (query.year && query.month) {
+      params = params.set('year', query.year.toString()).set('month', query.month.toString());
+    }
+
     return this.http.get<ExpensesListResponse>(this.baseUrl, { params });
   }
 }

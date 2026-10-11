@@ -10,11 +10,24 @@
   color: var(--color-danger);
 }
 
+.ledger-hero__aside {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--space-4);
+  min-width: 12.5rem;
+}
+
+.ledger-hero__aside .gastos-filters__field {
+  width: 100%;
+}
+
 .ledger-hero__note {
   max-width: 16rem;
   font-size: var(--text-sm);
   color: var(--color-text-muted);
   line-height: 1.6;
+  text-align: right;
 }
 
 .ledger-page__grid {
@@ -148,5 +161,13 @@
   .ledger-hero {
     grid-template-columns: 1fr;
     gap: var(--space-4);
+  }
+
+  .ledger-hero__aside {
+    align-items: stretch;
+  }
+
+  .ledger-hero__note {
+    text-align: left;
   }
 }

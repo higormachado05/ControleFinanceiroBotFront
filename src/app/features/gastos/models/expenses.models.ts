@@ -24,6 +24,8 @@ export interface ExpenseListItem {
 export interface ExpensesListResponse {
   totalGastos: number;
   quantidade: number;
+  ano: number;
+  mes: number;
   itens: ExpenseListItem[];
 }
 
@@ -43,5 +45,7 @@ export interface ExpensesQuery {
   accountScope: ExpenseAccountScope;
   responsibleUserId?: string;
   search?: string;
+  year?: number;
+  month?: number;
   limit?: number;
 }

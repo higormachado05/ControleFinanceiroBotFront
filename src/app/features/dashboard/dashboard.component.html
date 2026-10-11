@@ -17,11 +17,12 @@
     @if (summary(); as data) {
       <section class="balance-hero gf-panel" aria-label="Saldo e resumo">
         <div class="balance-hero__primary">
-          <span class="balance-hero__label">Saldo disponível</span>
+          <span class="balance-hero__label">Saldo do mês</span>
           <p class="balance-hero__amount tabular-nums">{{ formatCurrency(data.saldo) }}</p>
           <p class="balance-hero__hint">
             {{ data.quantidadeTransacoes }}
-            {{ data.quantidadeTransacoes === 1 ? 'movimentação' : 'movimentações' }} no período
+            {{ data.quantidadeTransacoes === 1 ? 'movimentação' : 'movimentações' }}
+            em {{ formatMonthLabel(data.ano, data.mes) }}
           </p>
         </div>
 
@@ -42,12 +43,12 @@
       <section class="movements gf-panel" aria-label="Últimos gastos">
         <div class="movements__header">
           <h2>Últimos gastos</h2>
-          <p>As três despesas mais recentes nas contas que você acessa.</p>
+          <p>As três despesas mais recentes deste mês.</p>
         </div>
 
         @if (recentExpenses().length === 0) {
           <div class="dashboard__state dashboard__state--empty">
-            <h3>Nenhum gasto recente</h3>
+            <h3>Nenhum gasto neste mês</h3>
             <p>Registre uma despesa pelo Telegram para vê-la aqui.</p>
           </div>
         } @else {
@@ -77,12 +78,12 @@
       <aside class="expense-chart gf-panel" aria-label="Despesas por categoria">
         <div class="expense-chart__header">
           <h2>Despesas por categoria</h2>
-          <p>Com base nas despesas das movimentações recentes.</p>
+          <p>Distribuição das despesas deste mês.</p>
         </div>
 
         @if (categoryExpenses().length === 0) {
           <div class="expense-chart__empty">
-            <p>Sem despesas recentes para exibir a distribuição.</p>
+            <p>Sem despesas neste mês para exibir a distribuição.</p>
           </div>
         } @else {
           <ul class="expense-chart__list">

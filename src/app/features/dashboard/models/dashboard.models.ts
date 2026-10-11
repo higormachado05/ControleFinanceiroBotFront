@@ -3,6 +3,8 @@ export interface DashboardSummary {
   receitas: number;
   gastos: number;
   quantidadeTransacoes: number;
+  ano: number;
+  mes: number;
 }
 
 export interface DashboardTransactionUser {
