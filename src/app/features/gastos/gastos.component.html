@@ -1,0 +1,116 @@
+<div class="ledger-page">
+  @if (loading()) {
+    <div class="ledger-page__skeleton" aria-busy="true" aria-label="Carregando despesas">
+      <div class="skeleton skeleton--hero"></div>
+      <div class="skeleton skeleton--list"></div>
+    </div>
+  } @else if (error()) {
+    <div class="ledger-page__state ledger-page__state--error" role="alert">
+      <h2>Não conseguimos carregar suas despesas</h2>
+      <p>{{ error() }}</p>
+      <button class="btn btn--primary" type="button" (click)="loadInitialData()">Tentar novamente</button>
+    </div>
+  } @else {
+    <section class="ledger-hero gf-panel ledger-hero--expense" aria-label="Total de despesas filtradas">
+      <div class="ledger-hero__primary">
+        <span class="ledger-hero__label">Total de despesas</span>
+        <p class="ledger-hero__amount tabular-nums">{{ formatCurrency(totalGastos()) }}</p>
+        <p class="ledger-hero__hint">
+          {{ items().length }}
+          {{ items().length === 1 ? 'lançamento exibido' : 'lançamentos exibidos' }}
+          com os filtros atuais
+        </p>
+      </div>
+      <p class="ledger-hero__note">
+        Registre novos gastos pelo Telegram. Os totais refletem conta e responsável selecionados.
+      </p>
+    </section>
+
+    <section class="movements gf-panel" aria-label="Lista de despesas">
+      <div class="movements__header gastos-filters">
+        <div class="gastos-filters__intro">
+          <h2>Gastos</h2>
+          <p>Despesas das contas que você pode acessar.</p>
+        </div>
+
+        <div class="gastos-filters__controls">
+          <label class="gastos-filters__field">
+            <span class="gastos-filters__label">Conta</span>
+            <select
+              class="gastos-filters__select"
+              [ngModel]="accountScope()"
+              (ngModelChange)="onAccountScopeChange($event)"
+            >
+              <option value="all">Todas</option>
+              @if (filterOptions()?.temContaPessoal) {
+                <option value="personal">Minha conta pessoal</option>
+              }
+              @if (filterOptions()?.temContaConjunta) {
+                <option value="joint">Conta conjunta</option>
+              }
+            </select>
+          </label>
+
+          <label class="gastos-filters__field">
+            <span class="gastos-filters__label">Responsável</span>
+            <select
+              class="gastos-filters__select"
+              [ngModel]="responsibleUserId()"
+              (ngModelChange)="onResponsibleChange($event)"
+            >
+              <option value="">Todos</option>
+              @for (member of responsibleOptions(); track member.id) {
+                <option [value]="member.id">
+                  {{ member.nome }}{{ member.ehUsuarioAtual ? ' (você)' : '' }}
+                </option>
+              }
+            </select>
+            @if (filterOptions()?.temContaConjunta && responsibleOptions().length > 1) {
+              <span class="gastos-filters__hint">Integrantes da conta conjunta</span>
+            }
+          </label>
+
+          <label class="gastos-filters__field gastos-filters__field--search">
+            <span class="gastos-filters__label">Buscar</span>
+            <input
+              class="gastos-filters__input"
+              type="search"
+              placeholder="Descrição do gasto"
+              [ngModel]="searchTerm()"
+              (ngModelChange)="onSearchInput($event)"
+            />
+          </label>
+        </div>
+      </div>
+
+      @if (items().length === 0) {
+        <div class="ledger-page__state ledger-page__state--empty">
+          <h3>Nenhuma despesa encontrada</h3>
+          <p>Ajuste os filtros ou registre um gasto pelo Telegram.</p>
+        </div>
+      } @else {
+        <ul class="movements__list">
+          @for (item of items(); track item.id) {
+            <li class="movement movement--expense">
+              <span class="movement__indicator" aria-hidden="true"></span>
+              <div class="movement__body">
+                <div class="movement__row">
+                  <span class="movement__type">Despesa</span>
+                  <time class="movement__date" [dateTime]="item.data">
+                    {{ formatDate(item.data) }}
+                  </time>
+                </div>
+                <p class="movement__title">{{ item.descricao }}</p>
+                <p class="movement__meta">{{ expenseContext(item) }}</p>
+                @if (item.categoria) {
+                  <p class="movement__meta movement__meta--subtle">{{ item.categoria }}</p>
+                }
+              </div>
+              <span class="movement__amount tabular-nums">−{{ formatCurrency(item.valor) }}</span>
+            </li>
+          }
+        </ul>
+      }
+    </section>
+  }
+</div>

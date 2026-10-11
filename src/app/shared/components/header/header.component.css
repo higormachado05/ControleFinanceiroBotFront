@@ -27,27 +27,8 @@
 .header__logo {
   display: inline-flex;
   align-items: center;
-  gap: 0.625rem;
   text-decoration: none;
-  color: var(--color-text);
-  font-weight: 700;
-  font-size: 1.05rem;
-  letter-spacing: -0.02em;
-}
-
-.header__logo-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 2rem;
-  height: 2rem;
-  border-radius: 0.625rem;
-  background: var(--gradient-primary);
-  font-size: 0.6875rem;
-  letter-spacing: -0.02em;
-  color: #fff;
-  font-size: 1rem;
-  font-weight: 700;
+  line-height: 0;
 }
 
 .header__toggle {

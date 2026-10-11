@@ -1,59 +1,58 @@
-import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
-import { forkJoin } from 'rxjs';
-import { AuthService } from '../../core/services/auth.service';
+import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
+import { forkJoin, Subscription } from 'rxjs';
+import { buildCategoryBreakdown } from '../../core/utils/category-breakdown.utils';
+import { DashboardRefreshService } from '../../core/services/dashboard-refresh.service';
 import { formatCurrency, formatDate, isReceita } from '../../core/utils/format.utils';
-import { DashboardRealtimeService } from './dashboard-realtime.service';
+import {
+  signedAmount,
+  transactionMeta,
+} from '../../core/utils/transaction-display.utils';
 import { DashboardService } from './dashboard.service';
 import { DashboardSummary, RecentTransaction } from './models/dashboard.models';
 
-interface NavItem {
-  label: string;
-  icon: string;
-  route?: string;
-  active?: boolean;
-  disabled?: boolean;
-}
+const MOVEMENTS_FETCH_LIMIT = 30;
+const DASHBOARD_EXPENSES_LIMIT = 3;
 
 @Component({
   selector: 'app-dashboard',
-  imports: [RouterLink],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css',
 })
 export class DashboardComponent implements OnInit, OnDestroy {
   private readonly dashboardService = inject(DashboardService);
-  private readonly dashboardRealtime = inject(DashboardRealtimeService);
-  protected readonly authService = inject(AuthService);
-  private readonly router = inject(Router);
+  private readonly dashboardRefresh = inject(DashboardRefreshService);
 
   protected readonly loading = signal(true);
   protected readonly error = signal<string | null>(null);
-  protected readonly sidebarOpen = signal(false);
   protected readonly summary = signal<DashboardSummary | null>(null);
   protected readonly transactions = signal<RecentTransaction[]>([]);
 
-  protected readonly navItems: NavItem[] = [
-    { label: 'Dashboard', icon: '▦', route: '/dashboard', active: true },
-    { label: 'Gastos', icon: '↓', disabled: true },
-    { label: 'Receitas', icon: '↑', disabled: true },
-    { label: 'Contas', icon: '◫', disabled: true },
-    { label: 'Metas', icon: '◎', disabled: true },
-    { label: 'Telegram', icon: '✦', disabled: true },
-    { label: 'Configurações', icon: '⚙', disabled: true },
-  ];
+  private refreshSubscription?: Subscription;
+
+  protected readonly recentExpenses = computed(() =>
+    this.transactions()
+      .filter((item) => !isReceita(item.tipo))
+      .slice(0, DASHBOARD_EXPENSES_LIMIT),
+  );
+
+  protected readonly categoryExpenses = computed(() =>
+    buildCategoryBreakdown(this.transactions(), 'expense'),
+  );
 
   protected readonly formatCurrency = formatCurrency;
   protected readonly formatDate = formatDate;
-  protected readonly isReceita = isReceita;
+  protected readonly transactionMeta = transactionMeta;
+  protected readonly signedAmount = signedAmount;
 
   ngOnInit(): void {
     this.loadDashboard();
-    this.dashboardRealtime.connect(() => this.loadDashboard(true));
+    this.refreshSubscription = this.dashboardRefresh.onRefresh$.subscribe(() =>
+      this.loadDashboard(true),
+    );
   }
 
   ngOnDestroy(): void {
-    this.dashboardRealtime.disconnect();
+    this.refreshSubscription?.unsubscribe();
   }
 
   loadDashboard(silent = false): void {
@@ -64,7 +63,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
     forkJoin({
       summary: this.dashboardService.getSummary(),
-      transactions: this.dashboardService.getRecentTransactions(undefined, 10),
+      transactions: this.dashboardService.getRecentTransactions(undefined, MOVEMENTS_FETCH_LIMIT),
     }).subscribe({
       next: ({ summary, transactions }) => {
         this.summary.set(summary);
@@ -73,40 +72,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
       },
       error: () => {
         this.loading.set(false);
-        this.error.set('Não foi possível carregar seus dados.');
+        this.error.set(
+          'Não foi possível carregar seus dados. Verifique sua conexão e tente novamente.',
+        );
       },
     });
-  }
-
-  toggleSidebar(): void {
-    this.sidebarOpen.update((open) => !open);
-  }
-
-  closeSidebar(): void {
-    this.sidebarOpen.set(false);
-  }
-
-  logout(): void {
-    this.authService.logout();
-    void this.router.navigate(['/login']);
-  }
-
-  transactionMeta(transaction: RecentTransaction): string {
-    const parts: string[] = [];
-
-    if (transaction.categoria) {
-      parts.push(transaction.categoria);
-    }
-
-    if (transaction.usuario?.nome) {
-      parts.push(`Lançado por ${transaction.usuario.nome}`);
-    }
-
-    return parts.join(' · ');
-  }
-
-  signedAmount(transaction: RecentTransaction): string {
-    const prefix = isReceita(transaction.tipo) ? '+' : '-';
-    return `${prefix}${formatCurrency(transaction.valor)}`;
   }
 }

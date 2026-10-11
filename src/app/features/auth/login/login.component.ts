@@ -7,11 +7,12 @@ import {
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AuthService } from '../../../core/services/auth.service';
+import { BrandLogoComponent } from '../../../shared/components/brand-logo/brand-logo.component';
 import { ApiErrorResponse } from '../../../core/models/auth.models';
 
 @Component({
   selector: 'app-login',
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, BrandLogoComponent],
   templateUrl: './login.component.html',
   styleUrl: './login.component.css',
 })

@@ -1,8 +1,7 @@
 <header class="header">
   <div class="container header__inner">
     <a class="header__logo" routerLink="/" (click)="closeMenu()">
-      <span class="header__logo-icon" aria-hidden="true">GF</span>
-      <span class="header__logo-text">GranaFlow</span>
+      <app-brand-logo variant="header" [lazy]="false" />
     </a>
 
     <button

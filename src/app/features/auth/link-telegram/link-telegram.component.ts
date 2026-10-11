@@ -9,13 +9,14 @@ import {
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AuthService } from '../../../core/services/auth.service';
+import { BrandLogoComponent } from '../../../shared/components/brand-logo/brand-logo.component';
 import { ApiErrorResponse } from '../../../core/models/auth.models';
 
 const MIN_PASSWORD_LENGTH = 8;
 
 @Component({
   selector: 'app-link-telegram',
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, BrandLogoComponent],
   templateUrl: './link-telegram.component.html',
   styleUrl: './link-telegram.component.css',
 })

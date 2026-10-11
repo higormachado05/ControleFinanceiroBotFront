@@ -2,16 +2,20 @@ import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
 import { guestGuard } from './core/guards/guest.guard';
 import { DashboardComponent } from './features/dashboard/dashboard.component';
+import { GastosComponent } from './features/gastos/gastos.component';
+import { ReceitasComponent } from './features/receitas/receitas.component';
 import { LinkTelegramComponent } from './features/auth/link-telegram/link-telegram.component';
 import { LoginComponent } from './features/auth/login/login.component';
 import { RegisterComponent } from './features/auth/register/register.component';
 import { LandingComponent } from './pages/landing/landing.component';
+import { AppShellComponent } from './shared/layout/app-shell/app-shell.component';
 
 export const routes: Routes = [
   {
     path: '',
     component: LandingComponent,
     canActivate: [guestGuard],
+    pathMatch: 'full',
   },
   {
     path: 'login',
@@ -29,9 +33,26 @@ export const routes: Routes = [
     canActivate: [guestGuard],
   },
   {
-    path: 'dashboard',
-    component: DashboardComponent,
+    path: '',
+    component: AppShellComponent,
     canActivate: [authGuard],
+    children: [
+      {
+        path: 'dashboard',
+        component: DashboardComponent,
+        data: { title: 'Dashboard', eyebrow: 'Visão geral' },
+      },
+      {
+        path: 'gastos',
+        component: GastosComponent,
+        data: { title: 'Gastos', eyebrow: 'Despesas' },
+      },
+      {
+        path: 'receitas',
+        component: ReceitasComponent,
+        data: { title: 'Receitas', eyebrow: 'Entradas' },
+      },
+    ],
   },
   {
     path: '**',
