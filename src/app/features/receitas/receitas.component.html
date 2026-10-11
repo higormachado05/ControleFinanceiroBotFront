@@ -18,21 +18,34 @@
           <p class="ledger-hero__amount tabular-nums">{{ formatCurrency(data.receitas) }}</p>
           <p class="ledger-hero__hint">
             {{ incomeTransactions().length }}
-            {{ incomeTransactions().length === 1 ? 'lançamento recente' : 'lançamentos recentes' }}
-            nesta lista
+            {{ incomeTransactions().length === 1 ? 'lançamento' : 'lançamentos' }}
+            em {{ monthLabel() }}
           </p>
         </div>
-        <p class="ledger-hero__note">
-          Entradas registradas pelo Telegram ou fluxos vinculados à sua conta.
-        </p>
+        <div class="ledger-hero__aside">
+          <label class="gastos-filters__field">
+            <span class="gastos-filters__label">Mês</span>
+            <input
+              class="gastos-filters__input"
+              type="month"
+              min="2020-01"
+              [max]="maxMonth()"
+              [ngModel]="monthInputValue()"
+              (ngModelChange)="onMonthInput($event)"
+            />
+          </label>
+          <p class="ledger-hero__note">
+            O total e a lista seguem o mês selecionado.
+          </p>
+        </div>
       </section>
     }
 
     <div class="ledger-page__grid">
       <section class="movements gf-panel" aria-label="Lista de receitas">
         <div class="movements__header">
-          <h2>Receitas recentes</h2>
-          <p>Movimentações de entrada nas contas que você acessa.</p>
+          <h2>Receitas</h2>
+          <p>Entradas de {{ monthLabel() }} nas contas que você acessa.</p>
           @if (listHint(); as hint) {
             <p class="movements__limit-hint">{{ hint }}</p>
           }
@@ -40,8 +53,8 @@
 
         @if (incomeTransactions().length === 0) {
           <div class="ledger-page__state ledger-page__state--empty">
-            <h3>Nenhuma receita registrada</h3>
-            <p>Quando você lançar uma receita pelo Telegram, ela será listada aqui.</p>
+            <h3>Nenhuma receita em {{ monthLabel() }}</h3>
+            <p>Escolha outro mês ou lance uma receita pelo Telegram.</p>
           </div>
         } @else {
           <ul class="movements__list">
@@ -70,12 +83,12 @@
       <aside class="expense-chart gf-panel income-chart" aria-label="Receitas por categoria">
         <div class="expense-chart__header">
           <h2>Por categoria</h2>
-          <p>Distribuição das receitas recentes.</p>
+          <p>Distribuição das receitas de {{ monthLabel() }}.</p>
         </div>
 
         @if (categoryBreakdown().length === 0) {
           <div class="expense-chart__empty">
-            <p>Sem categorias para exibir ainda.</p>
+            <p>Sem receitas neste mês para exibir a distribuição.</p>
           </div>
         } @else {
           <ul class="expense-chart__list">
