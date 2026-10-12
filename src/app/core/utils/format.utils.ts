@@ -9,6 +9,29 @@ const dateFormatter = new Intl.DateTimeFormat('pt-BR', {
   year: 'numeric',
 });
 
+export function toDateInputValue(value: string | Date): string {
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return '';
+  }
+  const month = `${date.getMonth() + 1}`.padStart(2, '0');
+  const day = `${date.getDate()}`.padStart(2, '0');
+  return `${date.getFullYear()}-${month}-${day}`;
+}
+
+export function parseMoneyInput(raw: string): number | null {
+  const normalized = raw
+    .trim()
+    .replace(/[^\d,.-]/g, '')
+    .replace(/\./g, '')
+    .replace(',', '.');
+  if (!normalized) {
+    return null;
+  }
+  const value = Number(normalized);
+  return Number.isFinite(value) ? value : null;
+}
+
 export function formatCurrency(value: number): string {
   return currencyFormatter.format(value);
 }

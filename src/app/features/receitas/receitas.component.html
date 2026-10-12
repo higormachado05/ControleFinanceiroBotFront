@@ -41,6 +41,97 @@
       </section>
     }
 
+    @if (actionError()) {
+      <p class="ledger-action-error" role="alert">{{ actionError() }}</p>
+    }
+
+    <section
+      #entryFormSection
+      class="movements gf-panel ledger-entry-form-section"
+      aria-label="Formulário de receita"
+    >
+      <div class="movements__header">
+        <h2>{{ entryFormTitle() }}</h2>
+        <p>
+          @if (editingIncomeId()) {
+            Ajuste os dados e salve. A conta do lançamento não muda na edição.
+          } @else {
+            Registre uma entrada manualmente neste mês.
+          }
+        </p>
+      </div>
+
+      <form class="ledger-entry-form" (ngSubmit)="submitIncome()">
+        @if (showEntryAccountPicker()) {
+          <label class="ledger-entry-form__field">
+            <span>Conta</span>
+            <select
+              [ngModel]="entryAccountScope()"
+              (ngModelChange)="entryAccountScope.set($event)"
+              name="entryIncomeAccount"
+            >
+              <option value="personal">Minha conta pessoal</option>
+              <option value="joint">Conta conjunta</option>
+            </select>
+          </label>
+        }
+        <label class="ledger-entry-form__field ledger-entry-form__field--wide">
+          <span>Descrição</span>
+          <input
+            type="text"
+            [ngModel]="entryDescricao()"
+            (ngModelChange)="entryDescricao.set($event)"
+            name="entryIncomeDesc"
+            placeholder="Ex.: Salário"
+          />
+        </label>
+        <label class="ledger-entry-form__field">
+          <span>Valor (R$)</span>
+          <input
+            type="text"
+            inputmode="decimal"
+            [ngModel]="entryValor()"
+            (ngModelChange)="entryValor.set($event)"
+            name="entryIncomeValor"
+          />
+        </label>
+        <label class="ledger-entry-form__field">
+          <span>Categoria</span>
+          <select
+            [ngModel]="entryCategoria()"
+            (ngModelChange)="entryCategoria.set($event)"
+            name="entryIncomeCat"
+          >
+            @for (cat of categories(); track cat.valor) {
+              <option [value]="cat.valor">{{ cat.rotulo }}</option>
+            }
+          </select>
+        </label>
+        <label class="ledger-entry-form__field">
+          <span>Data</span>
+          <input
+            type="date"
+            [max]="entryMaxDate"
+            [ngModel]="entryData()"
+            (ngModelChange)="entryData.set($event)"
+            name="entryIncomeData"
+          />
+        </label>
+        <button
+          class="btn btn--primary"
+          type="submit"
+          [disabled]="saving() || (!editingIncomeId() && !hasFinancialAccounts())"
+        >
+          {{ entrySubmitLabel() }}
+        </button>
+        @if (editingIncomeId()) {
+          <button class="btn btn--ghost" type="button" [disabled]="saving()" (click)="cancelEditIncome()">
+            Cancelar
+          </button>
+        }
+      </form>
+    </section>
+
     <div class="ledger-page__grid">
       <section class="movements gf-panel" aria-label="Lista de receitas">
         <div class="movements__header">
@@ -54,7 +145,7 @@
         @if (incomeTransactions().length === 0) {
           <div class="ledger-page__state ledger-page__state--empty">
             <h3>Nenhuma receita em {{ monthLabel() }}</h3>
-            <p>Escolha outro mês ou lance uma receita pelo Telegram.</p>
+            <p>Escolha outro mês ou registre uma receita acima.</p>
           </div>
         } @else {
           <ul class="movements__list">
@@ -73,7 +164,27 @@
                     <p class="movement__meta">{{ meta }}</p>
                   }
                 </div>
-                <span class="movement__amount tabular-nums">{{ signedAmount(transaction) }}</span>
+                <div class="movement__aside">
+                  <span class="movement__amount tabular-nums">{{ signedAmount(transaction) }}</span>
+                  <div class="movement__actions">
+                    <button
+                      class="btn btn--ghost"
+                      type="button"
+                      [disabled]="saving()"
+                      (click)="startEditIncome(transaction)"
+                    >
+                      Editar
+                    </button>
+                    <button
+                      class="btn btn--ghost"
+                      type="button"
+                      [disabled]="saving()"
+                      (click)="deleteIncome(transaction.id)"
+                    >
+                      Excluir
+                    </button>
+                  </div>
+                </div>
               </li>
             }
           </ul>

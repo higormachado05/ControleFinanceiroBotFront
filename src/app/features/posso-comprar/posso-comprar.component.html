@@ -1,0 +1,369 @@
+<div class="ledger-page planning-page">
+  @if (loading()) {
+    <div class="ledger-page__skeleton" aria-busy="true" aria-label="Carregando">
+      <div class="skeleton skeleton--hero"></div>
+      <div class="skeleton skeleton--list"></div>
+    </div>
+  } @else if (error()) {
+    <div class="ledger-page__state ledger-page__state--error" role="alert">
+      <h2>Não conseguimos carregar</h2>
+      <p>{{ error() }}</p>
+      <button class="btn btn--primary" type="button" (click)="loadInitialData()">Tentar novamente</button>
+    </div>
+  } @else {
+    @if (!hasFinancialAccounts()) {
+      <div class="gf-panel ledger-page__state" role="status">
+        <h2>Conta financeira necessária</h2>
+        <p>Simule compras com base nos seus lançamentos após vincular uma conta.</p>
+        <a class="btn btn--primary" routerLink="/ativar-conta">Ativar conta</a>
+      </div>
+    } @else {
+      <div class="posso-comprar-stack">
+      <section class="ledger-hero gf-panel posso-comprar-stack__hero" aria-label="Contexto financeiro">
+        <div class="ledger-hero__primary">
+          <span class="ledger-hero__label">Posso Comprar?</span>
+          <p class="ledger-hero__amount posso-comprar-hero__amount tabular-nums">
+            @if (contexto(); as ctx) {
+              {{ formatCurrency(ctx.capacidadePoupancaMensal) }}
+            } @else {
+              —
+            }
+          </p>
+          <p class="ledger-hero__hint">
+            Quanto sobra, em média, para guardar por mês — já descontada uma margem de segurança de
+            10%.
+          </p>
+          @if (!isCompactUi()) {
+            <p class="posso-comprar-disclaimer">
+              Orientação educativa com base nos seus registros — não substitui consultoria financeira
+              profissional.
+            </p>
+          }
+        </div>
+
+        <div class="ledger-hero__aside">
+          @if (showAccountScopeFilter()) {
+            <label class="gastos-filters__field">
+              <span class="gastos-filters__label">Visão</span>
+              <select
+                class="gastos-filters__select"
+                [ngModel]="accountScope()"
+                (ngModelChange)="onAccountScopeChange($event)"
+              >
+                <option value="all">Todas as contas</option>
+                @if (setupOptions()?.temContaPessoal) {
+                  <option value="personal">Minha conta pessoal</option>
+                }
+                @if (setupOptions()?.temContaConjunta) {
+                  <option value="joint">Conta conjunta</option>
+                }
+              </select>
+            </label>
+          }
+          @if (contexto(); as ctx) {
+            <div class="planning-scope-summary">
+              <span class="gastos-filters__label">Sobra mensal média</span>
+              <p class="planning-scope-summary__value tabular-nums">
+                {{ formatCurrency(ctx.sobraMediaMensal) }}
+              </p>
+              <p class="posso-comprar-metric__hint">Últimos {{ ctx.mesesAnalisados }} meses (receitas − gastos)</p>
+            </div>
+            @if (ctx.reservaDisponivel != null) {
+              <div class="planning-scope-summary">
+                <span class="gastos-filters__label">Reserva informada</span>
+                <p class="planning-scope-summary__value tabular-nums">
+                  {{ formatCurrency(ctx.reservaDisponivel) }}
+                </p>
+              </div>
+            }
+          }
+        </div>
+      </section>
+
+      <details
+        class="gf-panel posso-comprar-reserva-details posso-comprar-stack__reserva"
+        [open]="!isCompactUi()"
+      >
+        <summary id="posso-comprar-reserva-title" class="posso-comprar-reserva-details__summary">
+          Reserva disponível (opcional)
+        </summary>
+        <p class="planning-section__hint posso-comprar-reserva-details__hint">
+          Quanto você já tem guardado para compras ou emergências nesta conta. Melhora a avaliação à
+          vista.
+        </p>
+        <div class="posso-comprar-reserva">
+          @if ((setupOptions()?.contas.length ?? 0) > 1) {
+            <label class="gastos-filters__field posso-comprar-reserva__field">
+              <span class="gastos-filters__label">Conta</span>
+              <select
+                class="gastos-filters__select"
+                [ngModel]="settingsAccountId()"
+                (ngModelChange)="onSettingsAccountChange($event)"
+              >
+                @for (conta of setupOptions()?.contas ?? []; track conta.id) {
+                  <option [value]="conta.id">{{ conta.rotulo }}</option>
+                }
+              </select>
+            </label>
+          }
+          <label class="gastos-filters__field posso-comprar-reserva__field">
+            <span class="gastos-filters__label">Valor em reserva</span>
+            <input
+              type="text"
+              inputmode="decimal"
+              placeholder="Ex.: 2.500,00"
+              [ngModel]="reservaInput()"
+              (ngModelChange)="reservaInput.set($event)"
+            />
+          </label>
+          <button
+            class="btn btn--secondary"
+            type="button"
+            [disabled]="saving()"
+            (click)="saveReserva()"
+          >
+            Salvar reserva
+          </button>
+        </div>
+      </details>
+
+      <section class="gf-panel posso-comprar-stack__list" aria-labelledby="posso-comprar-list-title">
+        <div class="planning-section__head">
+          <div>
+            <h2 id="posso-comprar-list-title" class="planning-section__title">Fila de compras</h2>
+            <p class="planning-section__hint">
+              Ordem sugerida: o que faz mais sentido comprar ou adiar primeiro, com base no seu
+              orçamento e na prioridade que você definiu.
+            </p>
+          </div>
+          <div class="posso-comprar-list-actions">
+            @if (isCompactUi() && !simulationFormOpen()) {
+              <button class="btn btn--primary" type="button" (click)="openSimulationForm()">
+                Nova simulação
+              </button>
+            }
+            <button
+              class="btn btn--secondary"
+              type="button"
+              [disabled]="evaluating() || metas().length === 0"
+              (click)="evaluateAll(true)"
+            >
+              {{ evaluating() ? 'Avaliando…' : 'Reavaliar com IA' }}
+            </button>
+          </div>
+        </div>
+
+        @if (metas().length > 0) {
+          <details class="posso-comprar-glossario">
+            <summary>Como ler os números de cada simulação</summary>
+            <ul>
+              <li>
+                <strong>Índice de saúde financeira (0 a 100):</strong> mede o quão confortável a
+                compra é com seus lançamentos e planejamento. Não é score de banco ou cartão.
+              </li>
+              <li>
+                <strong>Quanto guardar por mês:</strong> quanto separar mensalmente até completar a
+                compra (ou a parcela, se for parcelado).
+              </li>
+              <li>
+                <strong>Tempo para juntar:</strong> em quanto tempo você chegaria ao valor, na
+                velocidade sugerida acima.
+              </li>
+            </ul>
+          </details>
+        }
+
+        @if (resumoFilaIa()) {
+          <p class="posso-comprar-fila-resumo">{{ resumoFilaIa() }}</p>
+        }
+
+        @if (metas().length === 0) {
+          <p class="planning-section__hint">
+            @if (isCompactUi()) {
+              Nenhuma simulação ainda. Toque em <strong>Nova simulação</strong> para começar.
+            } @else {
+              Nenhuma simulação ainda. Adicione a primeira compra no formulário abaixo.
+            }
+          </p>
+        } @else {
+          @for (meta of metas(); track meta.id) {
+            <article class="posso-comprar-goal">
+              <div class="posso-comprar-goal__head">
+                <div>
+                  <span class="posso-comprar-goal__rank" [attr.title]="rankLabel(meta.ordemPrioridade)">{{
+                    meta.ordemPrioridade
+                  }}</span>
+                  <h3 class="posso-comprar-goal__title">{{ meta.titulo }}</h3>
+                  <p class="posso-comprar-goal__meta">
+                    {{ meta.contaRotulo }} · Valor da compra {{ formatCurrency(meta.valorAlvo) }}
+                  </p>
+                  <p class="posso-comprar-goal__rank-hint">{{ rankLabel(meta.ordemPrioridade) }}</p>
+                </div>
+                <span class="posso-comprar-badge" [class]="vereditoClass(meta.veredito)">
+                  {{ vereditoLabel(meta.veredito) }}
+                </span>
+              </div>
+
+              @if (meta.alertas.length > 0) {
+                <ul class="posso-comprar-alerts">
+                  @for (alerta of meta.alertas; track alerta) {
+                    <li>{{ alerta }}</li>
+                  }
+                </ul>
+              }
+
+              <div class="posso-comprar-goal__metrics">
+                @if (meta.scoreSaude != null) {
+                  <div class="posso-comprar-metric">
+                    <span class="posso-comprar-metric__label">{{ scoreTitulo() }}</span>
+                    <p class="posso-comprar-metric__value tabular-nums">
+                      {{ meta.scoreSaude }}<span class="posso-comprar-metric__scale"> / 100</span>
+                    </p>
+                    <p class="posso-comprar-metric__hint">{{ scoreResumo(meta.scoreSaude) }}</p>
+                  </div>
+                }
+                @if (meta.poupancaMensalSugerida != null) {
+                  <div class="posso-comprar-metric">
+                    <span class="posso-comprar-metric__label">{{ valorMensalTitulo(meta) }}</span>
+                    <p class="posso-comprar-metric__value tabular-nums">
+                      {{ formatCurrency(meta.poupancaMensalSugerida) }}
+                    </p>
+                    <p class="posso-comprar-metric__hint">{{ valorMensalExplicacao(meta) }}</p>
+                  </div>
+                }
+                @if (meta.mesesEstimados != null) {
+                  <div class="posso-comprar-metric">
+                    <span class="posso-comprar-metric__label">{{ prazoTitulo(meta) }}</span>
+                    <p class="posso-comprar-metric__value">{{ prazoTexto(meta) }}</p>
+                    <p class="posso-comprar-metric__hint">{{ prazoExplicacao(meta) }}</p>
+                  </div>
+                }
+              </div>
+
+              @if (meta.resumoIa) {
+                <div class="posso-comprar-goal__ia">
+                  <p>{{ meta.resumoIa }}</p>
+                  @if (meta.sugestoes.length > 0) {
+                    <ul>
+                      @for (s of meta.sugestoes; track s) {
+                        <li>{{ s }}</li>
+                      }
+                    </ul>
+                  }
+                </div>
+              }
+
+              <button class="btn btn--ghost" type="button" (click)="removeGoal(meta)">Remover</button>
+            </article>
+          }
+        }
+      </section>
+
+      @if (showSimulationForm()) {
+      <section
+        #simulationFormSection
+        class="gf-panel posso-comprar-stack__form ledger-entry-form-section"
+        aria-labelledby="posso-comprar-form-title"
+      >
+        <div class="posso-comprar-form-head">
+          <h2 id="posso-comprar-form-title" class="planning-section__title">Nova simulação</h2>
+          @if (isCompactUi()) {
+            <button class="btn btn--ghost posso-comprar-form-head__close" type="button" (click)="closeSimulationForm()">
+              Fechar
+            </button>
+          }
+        </div>
+        @if (actionError()) {
+          <p class="ledger-action-error" role="alert">{{ actionError() }}</p>
+        }
+        <form class="planning-form" (ngSubmit)="addGoal()">
+          <label class="planning-form__field planning-form__field--wide">
+            <span>O que deseja comprar?</span>
+            <input type="text" [ngModel]="titulo()" (ngModelChange)="titulo.set($event)" name="titulo" required />
+          </label>
+          <label class="planning-form__field">
+            <span>Valor (R$)</span>
+            <input
+              type="text"
+              inputmode="decimal"
+              [ngModel]="valorAlvo()"
+              (ngModelChange)="valorAlvo.set($event)"
+              name="valorAlvo"
+              required
+            />
+          </label>
+          <label class="planning-form__field">
+            <span>Entrada (R$)</span>
+            <input
+              type="text"
+              inputmode="decimal"
+              [ngModel]="valorEntrada()"
+              (ngModelChange)="valorEntrada.set($event)"
+              name="valorEntrada"
+            />
+          </label>
+          <label class="planning-form__field">
+            <span>Data desejada</span>
+            <input
+              type="date"
+              [ngModel]="dataDesejada()"
+              (ngModelChange)="dataDesejada.set($event)"
+              name="dataDesejada"
+            />
+          </label>
+          <label class="planning-form__field">
+            <span>Prioridade (1–5)</span>
+            <input
+              type="number"
+              min="1"
+              max="5"
+              [ngModel]="prioridade()"
+              (ngModelChange)="prioridade.set(+$event)"
+              name="prioridade"
+            />
+          </label>
+          <label class="planning-form__field">
+            <span>Pagamento</span>
+            <select
+              [ngModel]="modoPagamento()"
+              (ngModelChange)="modoPagamento.set($event)"
+              name="modoPagamento"
+            >
+              <option value="Avista">À vista / poupar</option>
+              <option value="Parcelado">Parcelado</option>
+            </select>
+          </label>
+          @if (modoPagamento() === 'Parcelado') {
+            <label class="planning-form__field">
+              <span>Parcelas</span>
+              <input
+                type="number"
+                min="1"
+                [ngModel]="numParcelas()"
+                (ngModelChange)="numParcelas.set($event)"
+                name="numParcelas"
+              />
+            </label>
+          }
+          @if ((setupOptions()?.contas.length ?? 0) > 0) {
+            <label class="planning-form__field">
+              <span>Conta</span>
+              <select
+                [ngModel]="goalAccountId()"
+                (ngModelChange)="goalAccountId.set($event)"
+                name="goalAccountId"
+              >
+                @for (conta of setupOptions()?.contas ?? []; track conta.id) {
+                  <option [value]="conta.id">{{ conta.rotulo }}</option>
+                }
+              </select>
+            </label>
+          }
+          <button class="btn btn--primary" type="submit" [disabled]="saving()">Adicionar simulação</button>
+        </form>
+      </section>
+      }
+      </div>
+    }
+  }
+</div>

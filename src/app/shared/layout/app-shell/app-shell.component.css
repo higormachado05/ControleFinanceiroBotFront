@@ -177,6 +177,7 @@
 
 .app-shell__content {
   flex: 1;
+  min-width: 0;
   padding: var(--space-6);
   max-width: 72rem;
   width: 100%;

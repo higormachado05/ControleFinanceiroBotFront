@@ -39,6 +39,97 @@
       </div>
     </section>
 
+    @if (actionError()) {
+      <p class="ledger-action-error" role="alert">{{ actionError() }}</p>
+    }
+
+    <section
+      #entryFormSection
+      class="movements gf-panel ledger-entry-form-section"
+      aria-label="Formulário de gasto"
+    >
+      <div class="movements__header">
+        <h2>{{ entryFormTitle() }}</h2>
+        <p>
+          @if (editingExpenseId()) {
+            Ajuste os dados e salve. A conta do lançamento não muda na edição.
+          } @else {
+            Registre uma despesa manualmente neste mês.
+          }
+        </p>
+      </div>
+
+      <form class="ledger-entry-form" (ngSubmit)="submitExpense()">
+        @if (showEntryAccountPicker()) {
+          <label class="ledger-entry-form__field">
+            <span>Conta</span>
+            <select
+              [ngModel]="entryAccountScope()"
+              (ngModelChange)="entryAccountScope.set($event)"
+              name="entryExpenseAccount"
+            >
+              <option value="personal">Minha conta pessoal</option>
+              <option value="joint">Conta conjunta</option>
+            </select>
+          </label>
+        }
+        <label class="ledger-entry-form__field ledger-entry-form__field--wide">
+          <span>Descrição</span>
+          <input
+            type="text"
+            [ngModel]="entryDescricao()"
+            (ngModelChange)="entryDescricao.set($event)"
+            name="entryExpenseDesc"
+            placeholder="Ex.: Mercado do fim de semana"
+          />
+        </label>
+        <label class="ledger-entry-form__field">
+          <span>Valor (R$)</span>
+          <input
+            type="text"
+            inputmode="decimal"
+            [ngModel]="entryValor()"
+            (ngModelChange)="entryValor.set($event)"
+            name="entryExpenseValor"
+          />
+        </label>
+        <label class="ledger-entry-form__field">
+          <span>Categoria</span>
+          <select
+            [ngModel]="entryCategoria()"
+            (ngModelChange)="entryCategoria.set($event)"
+            name="entryExpenseCat"
+          >
+            @for (cat of categories(); track cat.valor) {
+              <option [value]="cat.valor">{{ cat.rotulo }}</option>
+            }
+          </select>
+        </label>
+        <label class="ledger-entry-form__field">
+          <span>Data</span>
+          <input
+            type="date"
+            [max]="entryMaxDate"
+            [ngModel]="entryData()"
+            (ngModelChange)="entryData.set($event)"
+            name="entryExpenseData"
+          />
+        </label>
+        <button
+          class="btn btn--primary"
+          type="submit"
+          [disabled]="saving() || (!editingExpenseId() && !hasFinancialAccounts())"
+        >
+          {{ entrySubmitLabel() }}
+        </button>
+        @if (editingExpenseId()) {
+          <button class="btn btn--ghost" type="button" [disabled]="saving()" (click)="cancelEditExpense()">
+            Cancelar
+          </button>
+        }
+      </form>
+    </section>
+
     <section class="movements gf-panel" aria-label="Lista de despesas">
       <div class="movements__header gastos-filters">
         <div class="gastos-filters__intro">
@@ -99,7 +190,7 @@
       @if (items().length === 0) {
         <div class="ledger-page__state ledger-page__state--empty">
           <h3>Nenhuma despesa em {{ monthLabel() }}</h3>
-          <p>Escolha outro mês ou registre um gasto pelo Telegram.</p>
+          <p>Escolha outro mês ou registre um gasto acima.</p>
         </div>
       } @else {
         <ul class="movements__list">
@@ -119,7 +210,17 @@
                   <p class="movement__meta movement__meta--subtle">{{ item.categoria }}</p>
                 }
               </div>
-              <span class="movement__amount tabular-nums">−{{ formatCurrency(item.valor) }}</span>
+              <div class="movement__aside">
+                <span class="movement__amount tabular-nums">−{{ formatCurrency(item.valor) }}</span>
+                <div class="movement__actions">
+                  <button class="btn btn--ghost" type="button" [disabled]="saving()" (click)="startEditExpense(item)">
+                    Editar
+                  </button>
+                  <button class="btn btn--ghost" type="button" [disabled]="saving()" (click)="deleteExpense(item.id)">
+                    Excluir
+                  </button>
+                </div>
+              </div>
             </li>
           }
         </ul>

@@ -1,9 +1,67 @@
 @import '../dashboard/dashboard.component.css';
 
+.ledger-entry-form-section {
+  scroll-margin-top: 5.5rem;
+}
+
 .ledger-page {
   display: flex;
   flex-direction: column;
   gap: var(--space-6);
+}
+
+.ledger-action-error {
+  margin: 0;
+  color: var(--color-danger);
+  font-size: var(--text-sm);
+}
+
+.ledger-entry-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: end;
+}
+
+.ledger-entry-form__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 8rem;
+  font-size: var(--text-sm);
+}
+
+.ledger-entry-form__field--wide {
+  flex: 1 1 12rem;
+}
+
+.ledger-entry-form__field input,
+.ledger-entry-form__field select {
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.movement__aside {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+.movement__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  justify-content: flex-end;
+}
+
+.movement__actions .btn--ghost {
+  padding: var(--space-1) var(--space-2);
+  font-size: var(--text-xs);
 }
 
 .ledger-hero--expense .ledger-hero__amount {
@@ -165,9 +223,49 @@
 
   .ledger-hero__aside {
     align-items: stretch;
+    min-width: 0;
   }
 
   .ledger-hero__note {
     text-align: left;
+    max-width: none;
+  }
+
+  .gastos-filters__controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .gastos-filters__field {
+    min-width: 0;
+    width: 100%;
+  }
+}
+
+@media (max-width: 640px) {
+  .ledger-entry-form {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .ledger-entry-form__field,
+  .ledger-entry-form__field--wide {
+    flex: 1 1 auto;
+    min-width: 0;
+    width: 100%;
+  }
+
+  .ledger-entry-form .btn {
+    width: 100%;
+  }
+
+  .movement__actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .movement__actions .btn--ghost {
+    flex: 1 1 calc(50% - var(--space-1));
+    text-align: center;
   }
 }
