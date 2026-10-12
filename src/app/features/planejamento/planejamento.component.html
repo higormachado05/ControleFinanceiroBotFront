@@ -65,7 +65,7 @@
           <h2>Conta financeira necessária</h2>
           <p>
             Seu usuário ainda não está vinculado a uma conta pessoal ou conjunta. O planejamento precisa
-            dessa conta para salvar gastos fixos e envelopes.
+            dessa conta para salvar gastos fixos e limites por categoria.
           </p>
           <p class="planning-callout__hint">
             Se você já usa o bot, ative o acesso web ou envie <strong>/vincular CÓDIGO</strong> no Telegram.
@@ -169,7 +169,7 @@
           }
         </section>
 
-        <section class="movements gf-panel" aria-label="Envelopes variáveis">
+        <section class="movements gf-panel" aria-label="Limites de gastos variáveis">
           <div class="movements__header">
             <h2>Gastos variáveis</h2>
             <p>Tetos por categoria comparados ao que você já gastou em {{ monthLabel() }}.</p>
@@ -204,7 +204,7 @@
               <input type="text" inputmode="decimal" [ngModel]="variableLimite()" (ngModelChange)="variableLimite.set($event)" name="varLimite" />
             </label>
             <button class="btn btn--primary" type="submit" [disabled]="saving() || !hasFinancialAccounts()">
-              Salvar envelope
+              Salvar limite
             </button>
           </form>
 
@@ -226,7 +226,7 @@
                   <div class="planning-envelope__bar" aria-hidden="true">
                     <span
                       class="planning-envelope__bar-fill"
-                      [class]="envelopeBarClass(env.status)"
+                      [class]="limitBarClass(env.status)"
                       [style.width.%]="env.percentualUsado > 100 ? 100 : env.percentualUsado"
                     ></span>
                   </div>

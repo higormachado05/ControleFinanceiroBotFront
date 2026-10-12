@@ -1,9 +1,1 @@
-@import '../gastos/gastos.component.css';
-
-.ledger-hero--income .ledger-hero__amount {
-  color: var(--color-success);
-}
-
-.income-chart__bar {
-  background: var(--color-success);
-}
+/* Layout styles: src/app/shared/styles/ledger.css */
