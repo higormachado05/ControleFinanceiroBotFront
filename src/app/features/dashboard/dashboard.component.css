@@ -214,6 +214,7 @@
   font-size: var(--text-base);
   font-weight: 600;
   color: var(--color-text);
+  overflow-wrap: anywhere;
 }
 
 .movement__meta {
@@ -316,13 +317,37 @@
   }
 
   .movement {
-    grid-template-columns: 3px 1fr;
+    grid-template-columns: 3px minmax(0, 1fr);
+    row-gap: var(--space-3);
+  }
+
+  .movement__body {
+    min-width: 0;
+  }
+
+  .movement__aside {
+    grid-column: 2;
+    width: 100%;
+    align-items: stretch;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--space-2);
+  }
+
+  .movement__actions {
+    justify-content: flex-end;
   }
 
   .movement__amount {
     grid-column: 2;
     padding-top: 0;
     text-align: left;
+  }
+
+  .movement__aside .movement__amount {
+    grid-column: unset;
+    padding-top: 0;
   }
 }
 

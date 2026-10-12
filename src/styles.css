@@ -164,6 +164,12 @@ img {
   box-shadow: var(--shadow-xs);
 }
 
+@media (max-width: 640px) {
+  .gf-panel {
+    padding: var(--space-4);
+  }
+}
+
 /* ── Buttons ─────────────────────────────────────────────────────────────── */
 
 .btn {

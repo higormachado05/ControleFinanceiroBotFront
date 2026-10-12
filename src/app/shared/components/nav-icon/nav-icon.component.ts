@@ -6,6 +6,7 @@ export type NavIconName =
   | 'income'
   | 'accounts'
   | 'goals'
+  | 'planning'
   | 'telegram'
   | 'settings';
 
@@ -47,6 +48,11 @@ export type NavIconName =
           <circle cx="12" cy="12" r="9" />
           <circle cx="12" cy="12" r="5" />
           <circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none" />
+        }
+        @case ('planning') {
+          <rect x="3" y="4" width="18" height="18" rx="2" />
+          <path d="M16 2v4M8 2v4M3 10h18" />
+          <path d="M8 14h2v2H8zM14 14h2v2h-2z" />
         }
         @case ('telegram') {
           <path d="M21 5L2 12.5l7 2.5L18 9l-8.5 5.5v4L14 16l7-11z" />

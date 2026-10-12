@@ -3,6 +3,8 @@ import { authGuard } from './core/guards/auth.guard';
 import { guestGuard } from './core/guards/guest.guard';
 import { DashboardComponent } from './features/dashboard/dashboard.component';
 import { GastosComponent } from './features/gastos/gastos.component';
+import { PlanejamentoComponent } from './features/planejamento/planejamento.component';
+import { PossoComprarComponent } from './features/posso-comprar/posso-comprar.component';
 import { ReceitasComponent } from './features/receitas/receitas.component';
 import { LinkTelegramComponent } from './features/auth/link-telegram/link-telegram.component';
 import { LoginComponent } from './features/auth/login/login.component';
@@ -51,6 +53,16 @@ export const routes: Routes = [
         path: 'receitas',
         component: ReceitasComponent,
         data: { title: 'Receitas', eyebrow: 'Entradas' },
+      },
+      {
+        path: 'planejamento',
+        component: PlanejamentoComponent,
+        data: { title: 'Planejamento', eyebrow: 'Orçamento' },
+      },
+      {
+        path: 'posso-comprar',
+        component: PossoComprarComponent,
+        data: { title: 'Posso Comprar?', eyebrow: 'Simulador' },
       },
     ],
   },

@@ -1,0 +1,246 @@
+<div class="ledger-page planning-page">
+  @if (loading()) {
+    <div class="ledger-page__skeleton" aria-busy="true" aria-label="Carregando planejamento">
+      <div class="skeleton skeleton--hero"></div>
+      <div class="skeleton skeleton--list"></div>
+    </div>
+  } @else if (error()) {
+    <div class="ledger-page__state ledger-page__state--error" role="alert">
+      <h2>Não conseguimos carregar o planejamento</h2>
+      <p>{{ error() }}</p>
+      <button class="btn btn--primary" type="button" (click)="loadInitialData()">Tentar novamente</button>
+    </div>
+  } @else {
+    @if (summary(); as data) {
+      <section class="ledger-hero gf-panel planning-hero" aria-label="Resumo do planejamento">
+        <div class="ledger-hero__primary">
+          <span class="ledger-hero__label">Plano do mês</span>
+          <p class="ledger-hero__amount tabular-nums">{{ formatCurrency(data.totalPlanejado) }}</p>
+          <p class="ledger-hero__hint">
+            Fixos {{ formatCurrency(data.totalGastosFixos) }} · Variáveis
+            {{ formatCurrency(data.totalLimitesVariaveis) }} · Realizado
+            {{ formatCurrency(data.gastosRealizados) }}
+          </p>
+        </div>
+
+        <div class="ledger-hero__aside">
+          <label class="gastos-filters__field">
+            <span class="gastos-filters__label">Mês</span>
+            <input
+              class="gastos-filters__input"
+              type="month"
+              min="2020-01"
+              [ngModel]="monthInputValue()"
+              (ngModelChange)="onMonthInput($event)"
+            />
+          </label>
+          @if (showAccountScopeFilter()) {
+            <label class="gastos-filters__field">
+              <span class="gastos-filters__label">Visão</span>
+              <select
+                class="gastos-filters__select"
+                [ngModel]="accountScope()"
+                (ngModelChange)="onAccountScopeChange($event)"
+              >
+                <option value="all">Todas as contas</option>
+                @if (setupOptions()?.temContaPessoal) {
+                  <option value="personal">Minha conta pessoal</option>
+                }
+                @if (setupOptions()?.temContaConjunta) {
+                  <option value="joint">Conta conjunta</option>
+                }
+              </select>
+            </label>
+          } @else {
+            <div class="planning-scope-summary">
+              <span class="gastos-filters__label">Conta</span>
+              <p class="planning-scope-summary__value">{{ accountScopeSummary() }}</p>
+            </div>
+          }
+        </div>
+      </section>
+
+      @if (!hasFinancialAccounts()) {
+        <section class="planning-callout gf-panel" role="status">
+          <h2>Conta financeira necessária</h2>
+          <p>
+            Seu usuário ainda não está vinculado a uma conta pessoal ou conjunta. O planejamento precisa
+            dessa conta para salvar gastos fixos e envelopes.
+          </p>
+          <p class="planning-callout__hint">
+            Se você já usa o bot, ative o acesso web ou envie <strong>/vincular CÓDIGO</strong> no Telegram.
+          </p>
+          <a class="btn btn--primary" routerLink="/ativar-conta">Ativar acesso web</a>
+        </section>
+      }
+
+      <dl class="planning-metrics">
+        <div class="planning-metrics__item gf-panel">
+          <dt>Receitas no mês</dt>
+          <dd class="tabular-nums">{{ formatCurrency(data.receitasNoMes) }}</dd>
+        </div>
+        <div class="planning-metrics__item gf-panel">
+          <dt>Sobra após fixos</dt>
+          <dd class="tabular-nums" [class.planning-metrics__negative]="data.sobraAposFixos < 0">
+            {{ formatCurrency(data.sobraAposFixos) }}
+          </dd>
+        </div>
+      </dl>
+
+      @if (data.alertas.length > 0) {
+        <section class="planning-alerts gf-panel" aria-label="Alertas do orçamento">
+          <h2>Alertas</h2>
+          <ul class="planning-alerts__list">
+            @for (alerta of data.alertas; track alerta.tipo + alerta.mensagem) {
+              <li class="planning-alert" [class]="alertClass(alerta.severidade)">{{ alerta.mensagem }}</li>
+            }
+          </ul>
+        </section>
+      }
+
+      @if (actionError()) {
+        <p class="planning-action-error" role="alert">{{ actionError() }}</p>
+      }
+
+      <div class="planning-page__grid">
+        <section class="movements gf-panel" aria-label="Gastos fixos">
+          <div class="movements__header">
+            <h2>Gastos fixos</h2>
+            <p>Compromissos que se repetem todo mês (aluguel, assinaturas, etc.).</p>
+          </div>
+
+          <form class="planning-form" (ngSubmit)="submitFixedExpense()">
+            @if (showAccountPickerInForms()) {
+              <label class="planning-form__field">
+                <span>Salvar na conta</span>
+                <select [ngModel]="fixedAccountId()" (ngModelChange)="fixedAccountId.set($event)" name="fixedAccount">
+                  @for (conta of setupOptions()?.contas ?? []; track conta.id) {
+                    <option [value]="conta.id">{{ conta.rotulo }}</option>
+                  }
+                </select>
+              </label>
+            } @else if (showSingleAccountHintInForms()) {
+              <p class="planning-form__account-hint">
+                <span>Salvar na conta</span>
+                <strong>{{ selectedFormAccountLabel() }}</strong>
+              </p>
+            }
+            <label class="planning-form__field planning-form__field--wide">
+              <span>Descrição</span>
+              <input type="text" [ngModel]="fixedDescricao()" (ngModelChange)="fixedDescricao.set($event)" name="fixedDesc" />
+            </label>
+            <label class="planning-form__field">
+              <span>Valor (R$)</span>
+              <input type="text" inputmode="decimal" [ngModel]="fixedValor()" (ngModelChange)="fixedValor.set($event)" name="fixedValor" />
+            </label>
+            <label class="planning-form__field">
+              <span>Dia (opc.)</span>
+              <input type="number" min="1" max="31" [ngModel]="fixedDia()" (ngModelChange)="fixedDia.set($event)" name="fixedDia" />
+            </label>
+            <button class="btn btn--primary" type="submit" [disabled]="saving() || !hasFinancialAccounts()">
+              Adicionar
+            </button>
+          </form>
+
+          @if (data.gastosFixos.length === 0) {
+            <p class="planning-empty">Nenhum gasto fixo cadastrado.</p>
+          } @else {
+            <ul class="planning-list">
+              @for (item of data.gastosFixos; track item.id) {
+                <li class="planning-list__item">
+                  <div>
+                    <p class="planning-list__title">{{ item.descricao }}</p>
+                    <p class="planning-list__meta">
+                      {{ item.contaRotulo }}
+                      @if (item.diaVencimento) {
+                        · vence dia {{ item.diaVencimento }}
+                      }
+                    </p>
+                  </div>
+                  <div class="planning-list__actions">
+                    <span class="tabular-nums">{{ formatCurrency(item.valor) }}</span>
+                    <button class="btn btn--ghost" type="button" [disabled]="saving()" (click)="removeFixedExpense(item.id)">
+                      Excluir
+                    </button>
+                  </div>
+                </li>
+              }
+            </ul>
+          }
+        </section>
+
+        <section class="movements gf-panel" aria-label="Envelopes variáveis">
+          <div class="movements__header">
+            <h2>Gastos variáveis</h2>
+            <p>Tetos por categoria comparados ao que você já gastou em {{ monthLabel() }}.</p>
+          </div>
+
+          <form class="planning-form" (ngSubmit)="submitVariableLimit()">
+            @if (showAccountPickerInForms()) {
+              <label class="planning-form__field">
+                <span>Salvar na conta</span>
+                <select [ngModel]="variableAccountId()" (ngModelChange)="variableAccountId.set($event)" name="varAccount">
+                  @for (conta of setupOptions()?.contas ?? []; track conta.id) {
+                    <option [value]="conta.id">{{ conta.rotulo }}</option>
+                  }
+                </select>
+              </label>
+            } @else if (showSingleAccountHintInForms()) {
+              <p class="planning-form__account-hint">
+                <span>Salvar na conta</span>
+                <strong>{{ selectedFormAccountLabel() }}</strong>
+              </p>
+            }
+            <label class="planning-form__field">
+              <span>Categoria</span>
+              <select [ngModel]="variableCategoria()" (ngModelChange)="variableCategoria.set($event)" name="varCat">
+                @for (cat of setupOptions()?.categorias ?? []; track cat.valor) {
+                  <option [value]="cat.valor">{{ cat.rotulo }}</option>
+                }
+              </select>
+            </label>
+            <label class="planning-form__field">
+              <span>Limite (R$)</span>
+              <input type="text" inputmode="decimal" [ngModel]="variableLimite()" (ngModelChange)="variableLimite.set($event)" name="varLimite" />
+            </label>
+            <button class="btn btn--primary" type="submit" [disabled]="saving() || !hasFinancialAccounts()">
+              Salvar envelope
+            </button>
+          </form>
+
+          @if (data.envelopesVariaveis.length === 0) {
+            <p class="planning-empty">Defina limites para acompanhar categorias variáveis.</p>
+          } @else {
+            <ul class="planning-envelopes">
+              @for (env of data.envelopesVariaveis; track env.id) {
+                <li class="planning-envelope">
+                  <div class="planning-envelope__head">
+                    <div>
+                      <p class="planning-envelope__title">{{ env.categoriaRotulo }}</p>
+                      <p class="planning-envelope__meta">{{ env.contaRotulo }}</p>
+                    </div>
+                    <button class="btn btn--ghost" type="button" [disabled]="saving()" (click)="removeVariableLimit(env.id)">
+                      Excluir
+                    </button>
+                  </div>
+                  <div class="planning-envelope__bar" aria-hidden="true">
+                    <span
+                      class="planning-envelope__bar-fill"
+                      [class]="envelopeBarClass(env.status)"
+                      [style.width.%]="env.percentualUsado > 100 ? 100 : env.percentualUsado"
+                    ></span>
+                  </div>
+                  <p class="planning-envelope__stats tabular-nums">
+                    {{ formatCurrency(env.gastoRealizado) }} / {{ formatCurrency(env.valorLimite) }}
+                    · {{ env.percentualUsado }}%
+                    · restam {{ formatCurrency(env.restante) }}
+                  </p>
+                </li>
+              }
+            </ul>
+          }
+        </section>
+      </div>
+    }
+  }
+</div>
