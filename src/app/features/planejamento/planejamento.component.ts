@@ -213,7 +213,7 @@ export class PlanejamentoComponent implements OnInit, OnDestroy {
       return;
     }
     if (!categoria) {
-      this.actionError.set('Selecione uma categoria para o envelope.');
+      this.actionError.set('Selecione uma categoria para o limite.');
       return;
     }
     if (valorLimite === null || valorLimite <= 0) {
@@ -237,7 +237,7 @@ export class PlanejamentoComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         this.saving.set(false);
-        this.actionError.set(err.error?.mensagem ?? 'Não foi possível salvar o envelope.');
+        this.actionError.set(err.error?.mensagem ?? 'Não foi possível salvar o limite.');
       },
     });
   }
@@ -252,7 +252,7 @@ export class PlanejamentoComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         this.saving.set(false);
-        this.actionError.set(err.error?.mensagem ?? 'Não foi possível excluir o envelope.');
+        this.actionError.set(err.error?.mensagem ?? 'Não foi possível excluir o limite.');
       },
     });
   }
@@ -310,7 +310,7 @@ export class PlanejamentoComponent implements OnInit, OnDestroy {
     return 'planning-alert--info';
   }
 
-  protected envelopeBarClass(status: string): string {
+  protected limitBarClass(status: string): string {
     if (status === 'over') return 'planning-envelope__bar-fill--over';
     if (status === 'warning') return 'planning-envelope__bar-fill--warning';
     return '';

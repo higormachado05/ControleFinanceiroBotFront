@@ -1,4 +1,4 @@
-@import '../planejamento/planejamento.component.css';
+/* Shared ledger/planning: src/app/shared/styles/ledger.css, planning.css */
 
 .posso-comprar-stack {
   display: flex;
@@ -79,27 +79,6 @@
 
 .posso-comprar-form-head__close {
   flex-shrink: 0;
-}
-
-.planning-section__title {
-  margin: 0;
-  font-size: var(--text-lg);
-  font-weight: 600;
-}
-
-.planning-section__hint {
-  margin: var(--space-2) 0 var(--space-4);
-  font-size: var(--text-sm);
-  color: var(--color-text-muted);
-}
-
-.planning-section__head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: var(--space-3);
-  margin-bottom: var(--space-2);
 }
 
 .posso-comprar-hero__amount {
