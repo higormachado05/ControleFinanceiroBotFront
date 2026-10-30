@@ -79,6 +79,25 @@
   color: var(--color-text-subtle);
 }
 
+.balance-hero__aside {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--space-5);
+}
+
+.balance-hero__aside .gastos-filters__field {
+  width: min(100%, 12rem);
+}
+
+.period-custom-toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
 .balance-hero__metrics {
   display: flex;
   gap: var(--space-8);
@@ -525,6 +544,10 @@
   .balance-hero {
     grid-template-columns: 1fr;
     gap: var(--space-6);
+  }
+
+  .balance-hero__aside {
+    align-items: stretch;
   }
 
   .balance-hero__metrics {

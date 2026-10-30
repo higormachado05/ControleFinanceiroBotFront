@@ -5,6 +5,9 @@ export interface DashboardSummary {
   quantidadeTransacoes: number;
   ano: number;
   mes: number;
+  diaInicioCiclo?: number;
+  periodoInicio?: string;
+  periodoFim?: string;
 }
 
 export interface DashboardTransactionUser {

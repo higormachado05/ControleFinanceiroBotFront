@@ -9,6 +9,7 @@ import {
   LoginResponse,
   RegisterApiRequest,
 } from '../models/auth.models';
+import { UserPreferencesService } from './user-preferences.service';
 
 const TOKEN_STORAGE_KEY = 'granaflow_access_token';
 const USER_STORAGE_KEY = 'granaflow_current_user';
@@ -16,6 +17,7 @@ const USER_STORAGE_KEY = 'granaflow_current_user';
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly http = inject(HttpClient);
+  private readonly userPreferences = inject(UserPreferencesService);
   private readonly authUrl = `${environment.apiUrl}/api/auth`;
   private readonly token = signal<string | null>(this.readStoredToken());
   private readonly currentUser = signal<AuthUser | null>(this.readStoredUser());
@@ -52,6 +54,7 @@ export class AuthService {
     return this.http.get<AuthUser>(`${this.authUrl}/me`).pipe(
       tap((user) => {
         this.currentUser.set(user);
+        this.userPreferences.setFromAuth(user.financialCycleStartDay);
         sessionStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
       }),
       catchError(() => {
@@ -85,6 +88,7 @@ export class AuthService {
   private applySession(accessToken: string, user: AuthUser): void {
     this.token.set(accessToken);
     this.currentUser.set(user);
+    this.userPreferences.setFromAuth(user.financialCycleStartDay);
     sessionStorage.setItem(TOKEN_STORAGE_KEY, accessToken);
     sessionStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
   }
@@ -110,7 +114,9 @@ export class AuthService {
     }
 
     try {
-      return JSON.parse(raw) as AuthUser;
+      const user = JSON.parse(raw) as AuthUser;
+      this.userPreferences.setFromAuth(user.financialCycleStartDay);
+      return user;
     } catch {
       return null;
     }

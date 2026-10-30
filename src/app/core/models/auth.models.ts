@@ -22,6 +22,7 @@ export interface AuthUser {
   id: string;
   nome: string;
   email: string;
+  financialCycleStartDay?: number;
 }
 
 export interface LoginResponse {
