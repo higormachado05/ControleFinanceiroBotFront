@@ -1,0 +1,99 @@
+.month-picker {
+  position: relative;
+  display: grid;
+  grid-template-columns: 2.25rem minmax(0, 1fr) 2.25rem;
+  gap: var(--space-2);
+  align-items: stretch;
+  width: 100%;
+}
+
+.month-picker--disabled {
+  opacity: 0.55;
+}
+
+.month-picker__nav {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+}
+
+.month-picker__nav svg {
+  width: 1.125rem;
+  height: 1.125rem;
+}
+
+.month-picker__nav:hover:not(:disabled) {
+  border-color: var(--color-primary);
+  color: var(--color-primary-dark);
+  background: var(--color-surface-muted, #f8fafc);
+}
+
+.month-picker__nav:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.month-picker__nav:disabled {
+  cursor: not-allowed;
+}
+
+.month-picker__display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.125rem;
+  min-height: 2.75rem;
+  padding: 0.375rem 0.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: linear-gradient(180deg, var(--color-surface) 0%, var(--color-surface-muted, #f8fafc) 100%);
+  color: var(--color-text);
+  cursor: pointer;
+  text-align: center;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.month-picker__display:hover:not(:disabled) {
+  border-color: var(--color-primary);
+  box-shadow: 0 1px 0 rgb(15 23 42 / 0.04);
+}
+
+.month-picker__display:focus-visible {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: var(--focus-ring);
+}
+
+.month-picker__display:disabled {
+  cursor: not-allowed;
+}
+
+.month-picker__label {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  text-transform: capitalize;
+}
+
+.month-picker__hint {
+  font-size: 0.6875rem;
+  color: var(--color-text-subtle);
+  letter-spacing: 0.02em;
+}
+
+.month-picker__native {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}

@@ -17,68 +17,29 @@
     @if (summary(); as data) {
       <section class="balance-hero gf-panel" aria-label="Saldo e resumo">
         <div class="balance-hero__primary">
-          <span class="balance-hero__label">Saldo do mês</span>
+          <span class="balance-hero__label">{{ balanceLabel() }}</span>
           <p class="balance-hero__amount tabular-nums">{{ formatCurrency(data.saldo) }}</p>
-          <p class="balance-hero__hint">
-            {{ data.quantidadeTransacoes }}
-            {{ data.quantidadeTransacoes === 1 ? 'movimentação' : 'movimentações' }}
-            em {{ monthLabel() }}
-          </p>
         </div>
 
         <div class="balance-hero__aside">
-          <label class="gastos-filters__field">
-            <span class="gastos-filters__label">Mês de referência</span>
-            <input
-              class="gastos-filters__input"
-              type="month"
-              min="2020-01"
-              [disabled]="useCustomRange()"
-              [ngModel]="monthInputValue()"
-              (ngModelChange)="onMonthInput($event)"
-            />
-          </label>
-          <label class="gastos-filters__field period-custom-toggle">
-            <input
-              type="checkbox"
-              [ngModel]="useCustomRange()"
-              (ngModelChange)="onCustomRangeToggle($event)"
-            />
-            <span>Período personalizado</span>
-          </label>
-          @if (useCustomRange()) {
-            <label class="gastos-filters__field">
-              <span class="gastos-filters__label">De</span>
-              <input
-                class="gastos-filters__input"
-                type="date"
-                [ngModel]="customStartDate()"
-                (ngModelChange)="customStartDate.set($event)"
-              />
-            </label>
-            <label class="gastos-filters__field">
-              <span class="gastos-filters__label">Até</span>
-              <input
-                class="gastos-filters__input"
-                type="date"
-                [ngModel]="customEndDate()"
-                (ngModelChange)="customEndDate.set($event)"
-              />
-            </label>
-            <button class="btn btn--ghost btn--sm" type="button" (click)="applyCustomRange()">
-              Aplicar intervalo
-            </button>
-          }
-          <dl class="balance-hero__metrics">
-            <div class="balance-hero__metric balance-hero__metric--income">
-              <dt>Receitas</dt>
-              <dd class="tabular-nums">{{ formatCurrency(data.receitas) }}</dd>
-            </div>
-            <div class="balance-hero__metric balance-hero__metric--expense">
-              <dt>Despesas</dt>
-              <dd class="tabular-nums">{{ formatCurrency(data.gastos) }}</dd>
-            </div>
-          </dl>
+          <app-period-view-controls
+            [monthValue]="monthInputValue()"
+            [cycleStartDay]="cycleStartDay()"
+            [viewingCurrentPeriod]="viewingCurrentPeriod()"
+            (monthValueChange)="onMonthInput($event)"
+            (goToCurrentPeriod)="goToCurrentPeriod()"
+          />
+
+            <dl class="balance-hero__metrics period-panel__metrics">
+              <div class="balance-hero__metric balance-hero__metric--income">
+                <dt>Receitas</dt>
+                <dd class="tabular-nums">{{ formatCurrency(data.receitas) }}</dd>
+              </div>
+              <div class="balance-hero__metric balance-hero__metric--expense">
+                <dt>Despesas</dt>
+                <dd class="tabular-nums">{{ formatCurrency(data.gastos) }}</dd>
+              </div>
+            </dl>
         </div>
       </section>
     }
@@ -87,7 +48,6 @@
       <section class="movements gf-panel" aria-label="Últimos gastos">
         <div class="movements__header">
           <h2>Últimos gastos</h2>
-          <p>As três despesas mais recentes de {{ monthLabel() }}.</p>
         </div>
 
         @if (recentExpenses().length === 0) {
@@ -122,7 +82,6 @@
       <aside class="expense-chart gf-panel" aria-label="Despesas por categoria">
         <div class="expense-chart__header">
           <h2>Despesas por categoria</h2>
-          <p>Distribuição das despesas de {{ monthLabel() }}.</p>
         </div>
 
         @if (categoryExpenses().length === 0) {

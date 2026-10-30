@@ -1,0 +1,28 @@
+<div class="period-panel">
+  <span class="period-panel__heading">Consultar lançamentos</span>
+
+  <app-month-period-picker
+    [value]="monthValue()"
+    (valueChange)="monthValueChange.emit($event)"
+  />
+
+  <p class="period-panel__fechamento">
+    @if (cycleStartDay() === 1) {
+      Fechamento da conta: mês calendário (dia 1).
+    } @else {
+      Fechamento da conta: todo dia {{ cycleStartDay() }} de cada mês.
+    }
+    <a routerLink="/preferencias">Ajustar fechamento</a>
+  </p>
+
+  <p class="period-panel__help">
+    O fechamento define em qual ciclo cada lançamento entra. Aqui você só escolhe qual ciclo
+    quer visualizar (anterior, atual ou próximo).
+  </p>
+
+  @if (!viewingCurrentPeriod()) {
+    <button class="btn btn--ghost btn--sm period-panel__current" type="button" (click)="goToCurrentPeriod.emit()">
+      Voltar ao período atual
+    </button>
+  }
+</div>

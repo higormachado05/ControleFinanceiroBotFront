@@ -27,9 +27,11 @@ import {
   formatPeriodDisplay,
   isSameMonth,
   MonthPeriod,
+  normalizeCycleStartDay,
   parseMonthInputValue,
   toMonthInputValue,
 } from '../../core/utils/month.utils';
+import { PeriodViewControlsComponent } from '../../shared/components/period-view-controls/period-view-controls.component';
 import { ExpensesService } from './expenses.service';
 import {
   ExpenseAccountScope,
@@ -40,7 +42,7 @@ import {
 
 @Component({
   selector: 'app-gastos',
-  imports: [FormsModule],
+  imports: [FormsModule, PeriodViewControlsComponent],
   templateUrl: './gastos.component.html',
   styleUrl: './gastos.component.css',
 })
@@ -65,14 +67,11 @@ export class GastosComponent implements OnInit, OnDestroy {
   protected readonly responsibleUserId = signal<string>('');
   protected readonly searchTerm = signal('');
   protected readonly period = signal<MonthPeriod>(currentReferencePeriod(1));
-  protected readonly useCustomRange = signal(false);
-  protected readonly customStartDate = signal('');
-  protected readonly customEndDate = signal('');
   protected readonly periodLabel = signal('');
 
   private refreshSubscription?: Subscription;
   private monthSubscription?: Subscription;
-  private followsCurrentMonth = true;
+  private followsCurrentPeriod = true;
   private hasLoaded = false;
   private searchDebounce?: ReturnType<typeof setTimeout>;
 
@@ -104,13 +103,19 @@ export class GastosComponent implements OnInit, OnDestroy {
   protected readonly formatDate = formatDate;
   protected readonly monthLabel = computed(() => this.periodLabel());
   protected readonly monthInputValue = computed(() => toMonthInputValue(this.period()));
+  protected readonly cycleStartDay = computed(() =>
+    normalizeCycleStartDay(this.userPreferences.financialCycleStartDay()),
+  );
+  protected readonly viewingCurrentPeriod = computed(() =>
+    isSameMonth(this.period(), currentReferencePeriod(this.cycleStartDay())),
+  );
 
   ngOnInit(): void {
     this.period.set(currentReferencePeriod(this.userPreferences.financialCycleStartDay()));
     this.loadInitialData();
     this.refreshSubscription = this.dashboardRefresh.onRefresh$.subscribe(() => this.loadExpenses(true));
     this.monthSubscription = this.monthChange.monthChanged$.subscribe((period) => {
-      if (!this.followsCurrentMonth || this.useCustomRange()) {
+      if (!this.followsCurrentPeriod) {
         return;
       }
       this.period.set({ year: period.year, month: period.month });
@@ -138,10 +143,6 @@ export class GastosComponent implements OnInit, OnDestroy {
   }
 
   onMonthInput(value: string): void {
-    if (this.useCustomRange()) {
-      return;
-    }
-
     const parsed = parseMonthInputValue(value);
     if (!parsed) {
       this.period.set({ ...this.period() });
@@ -152,23 +153,15 @@ export class GastosComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.followsCurrentMonth = isSameMonth(parsed, this.monthChange.currentMonth());
+    const current = currentReferencePeriod(this.cycleStartDay());
+    this.followsCurrentPeriod = isSameMonth(parsed, current);
     this.period.set(parsed);
     this.loadExpenses();
   }
 
-  onCustomRangeToggle(enabled: boolean): void {
-    this.useCustomRange.set(enabled);
-    if (!enabled) {
-      this.loadExpenses();
-    }
-  }
-
-  applyCustomRange(): void {
-    if (!this.customStartDate() || !this.customEndDate()) {
-      return;
-    }
-    this.followsCurrentMonth = false;
+  goToCurrentPeriod(): void {
+    this.followsCurrentPeriod = true;
+    this.period.set(currentReferencePeriod(this.cycleStartDay()));
     this.loadExpenses();
   }
 
@@ -324,19 +317,6 @@ export class GastosComponent implements OnInit, OnDestroy {
   private buildQuery() {
     const responsible = this.responsibleUserId().trim();
     const period = this.period();
-    if (this.useCustomRange()) {
-      return {
-        accountScope: this.accountScope(),
-        responsibleUserId: responsible || undefined,
-        search: this.searchTerm().trim() || undefined,
-        year: period.year,
-        month: period.month,
-        startDate: this.customStartDate(),
-        endDate: this.customEndDate(),
-        limit: 500,
-      };
-    }
-
     return {
       accountScope: this.accountScope(),
       responsibleUserId: responsible || undefined,

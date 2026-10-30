@@ -1,0 +1,47 @@
+<div class="month-picker" [class.month-picker--disabled]="disabled()">
+  <button
+    type="button"
+    class="month-picker__nav"
+    aria-label="Mês anterior"
+    [disabled]="disabled()"
+    (click)="shift(-1)"
+  >
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+    </svg>
+  </button>
+
+  <button
+    type="button"
+    class="month-picker__display"
+    [disabled]="disabled()"
+    (click)="openNativePicker()"
+  >
+    <span class="month-picker__label">{{ displayLabel() }}</span>
+    <span class="month-picker__hint">Alterar mês</span>
+  </button>
+
+  <button
+    type="button"
+    class="month-picker__nav"
+    aria-label="Próximo mês"
+    [disabled]="disabled()"
+    (click)="shift(1)"
+  >
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M9 18l6-6-6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+    </svg>
+  </button>
+
+  <input
+    #nativeInput
+    class="month-picker__native"
+    type="month"
+    tabindex="-1"
+    aria-hidden="true"
+    [min]="min()"
+    [disabled]="disabled()"
+    [value]="value()"
+    (change)="onNativeChange($any($event.target).value)"
+  />
+</div>
