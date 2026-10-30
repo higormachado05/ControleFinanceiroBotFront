@@ -46,6 +46,7 @@ export class AppShellComponent implements OnInit, OnDestroy {
     { label: 'Receitas', icon: 'income', route: '/receitas' },
     { label: 'Planejamento', icon: 'planning', route: '/planejamento' },
     { label: 'Posso Comprar?', icon: 'goals', route: '/posso-comprar' },
+    { label: 'Preferências', icon: 'settings', route: '/preferencias' },
   ];
 
   ngOnInit(): void {

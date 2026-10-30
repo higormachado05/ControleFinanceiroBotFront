@@ -50,6 +50,9 @@ export interface PlanningAlert {
 export interface PlanningSummary {
   ano: number;
   mes: number;
+  diaInicioCiclo?: number;
+  periodoInicio?: string;
+  periodoFim?: string;
   receitasNoMes: number;
   totalGastosFixos: number;
   totalLimitesVariaveis: number;
@@ -78,4 +81,6 @@ export interface PlanningSummaryQuery {
   accountScope: PlanningAccountScope;
   year?: number;
   month?: number;
+  startDate?: string;
+  endDate?: string;
 }

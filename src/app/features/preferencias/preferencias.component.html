@@ -1,0 +1,42 @@
+<div class="ledger-page preferences-page">
+  @if (loading()) {
+    <div class="ledger-page__skeleton" aria-busy="true">
+      <div class="skeleton skeleton--hero"></div>
+    </div>
+  } @else {
+    <section class="gf-panel preferences-panel" aria-label="Preferências financeiras">
+      <h1 class="preferences-panel__title">Preferências</h1>
+      <p class="preferences-panel__lead">
+        Defina quando começa o seu mês financeiro. Com dia 1, os totais seguem o calendário.
+        Com outro dia (ex.: 5), o período vai do dia escolhido até o dia anterior no mês seguinte.
+      </p>
+
+      <label class="gastos-filters__field preferences-panel__field">
+        <span class="gastos-filters__label">Dia de início do ciclo</span>
+        <input
+          class="gastos-filters__input"
+          type="number"
+          [min]="minDay"
+          [max]="maxDay"
+          [ngModel]="cycleStartDay()"
+          (ngModelChange)="cycleStartDay.set($event)"
+        />
+      </label>
+      <p class="preferences-panel__hint">Use um valor entre {{ minDay }} e {{ maxDay }}.</p>
+
+      @if (error()) {
+        <p class="ledger-action-error" role="alert">{{ error() }}</p>
+      }
+      @if (success()) {
+        <p class="preferences-panel__success" role="status">{{ success() }}</p>
+      }
+
+      <div class="preferences-panel__actions">
+        <button class="btn btn--primary" type="button" [disabled]="saving()" (click)="save()">
+          {{ saving() ? 'Salvando…' : 'Salvar preferências' }}
+        </button>
+        <a class="btn btn--ghost" routerLink="/dashboard">Voltar ao dashboard</a>
+      </div>
+    </section>
+  }
+</div>

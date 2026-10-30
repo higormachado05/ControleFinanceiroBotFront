@@ -13,6 +13,7 @@ import { FormsModule } from '@angular/forms';
 import { forkJoin, Subscription } from 'rxjs';
 import { DashboardRefreshService } from '../../core/services/dashboard-refresh.service';
 import { MonthChangeService } from '../../core/services/month-change.service';
+import { UserPreferencesService } from '../../core/services/user-preferences.service';
 import {
   formatCurrency,
   formatDate,
@@ -22,9 +23,8 @@ import {
 import { TransactionsService } from '../transactions/transactions.service';
 import { EntryAccountScope, TransactionCategoryOption } from '../transactions/models/transaction.models';
 import {
-  currentMonthPeriod,
-  formatMonthLabel,
-  isAfterMonth,
+  currentReferencePeriod,
+  formatPeriodDisplay,
   isSameMonth,
   MonthPeriod,
   parseMonthInputValue,
@@ -49,6 +49,7 @@ export class GastosComponent implements OnInit, OnDestroy {
   private readonly transactionsService = inject(TransactionsService);
   private readonly dashboardRefresh = inject(DashboardRefreshService);
   private readonly monthChange = inject(MonthChangeService);
+  private readonly userPreferences = inject(UserPreferencesService);
   private readonly entryFormSection = viewChild<ElementRef<HTMLElement>>('entryFormSection');
 
   protected readonly loading = signal(true);
@@ -63,7 +64,11 @@ export class GastosComponent implements OnInit, OnDestroy {
   protected readonly accountScope = signal<ExpenseAccountScope>('all');
   protected readonly responsibleUserId = signal<string>('');
   protected readonly searchTerm = signal('');
-  protected readonly period = signal<MonthPeriod>(currentMonthPeriod());
+  protected readonly period = signal<MonthPeriod>(currentReferencePeriod(1));
+  protected readonly useCustomRange = signal(false);
+  protected readonly customStartDate = signal('');
+  protected readonly customEndDate = signal('');
+  protected readonly periodLabel = signal('');
 
   private refreshSubscription?: Subscription;
   private monthSubscription?: Subscription;
@@ -75,7 +80,6 @@ export class GastosComponent implements OnInit, OnDestroy {
   protected readonly entryValor = signal('');
   protected readonly entryCategoria = signal('Mercado');
   protected readonly entryData = signal(this.todayDateInput());
-  protected readonly entryMaxDate = this.todayDateInput();
   protected readonly entryAccountScope = signal<EntryAccountScope>('personal');
   protected readonly editingExpenseId = signal<string | null>(null);
 
@@ -98,18 +102,15 @@ export class GastosComponent implements OnInit, OnDestroy {
     this.editingExpenseId() ? 'Salvar alterações' : 'Registrar despesa',
   );
   protected readonly formatDate = formatDate;
-  protected readonly monthLabel = computed(() => {
-    const period = this.period();
-    return formatMonthLabel(period.year, period.month);
-  });
+  protected readonly monthLabel = computed(() => this.periodLabel());
   protected readonly monthInputValue = computed(() => toMonthInputValue(this.period()));
-  protected readonly maxMonth = computed(() => toMonthInputValue(this.monthChange.currentMonth()));
 
   ngOnInit(): void {
+    this.period.set(currentReferencePeriod(this.userPreferences.financialCycleStartDay()));
     this.loadInitialData();
     this.refreshSubscription = this.dashboardRefresh.onRefresh$.subscribe(() => this.loadExpenses(true));
     this.monthSubscription = this.monthChange.monthChanged$.subscribe((period) => {
-      if (!this.followsCurrentMonth) {
+      if (!this.followsCurrentMonth || this.useCustomRange()) {
         return;
       }
       this.period.set({ year: period.year, month: period.month });
@@ -137,9 +138,12 @@ export class GastosComponent implements OnInit, OnDestroy {
   }
 
   onMonthInput(value: string): void {
-    const current = this.monthChange.currentMonth();
+    if (this.useCustomRange()) {
+      return;
+    }
+
     const parsed = parseMonthInputValue(value);
-    if (!parsed || isAfterMonth(parsed, current)) {
+    if (!parsed) {
       this.period.set({ ...this.period() });
       return;
     }
@@ -148,8 +152,23 @@ export class GastosComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.followsCurrentMonth = isSameMonth(parsed, current);
+    this.followsCurrentMonth = isSameMonth(parsed, this.monthChange.currentMonth());
     this.period.set(parsed);
+    this.loadExpenses();
+  }
+
+  onCustomRangeToggle(enabled: boolean): void {
+    this.useCustomRange.set(enabled);
+    if (!enabled) {
+      this.loadExpenses();
+    }
+  }
+
+  applyCustomRange(): void {
+    if (!this.customStartDate() || !this.customEndDate()) {
+      return;
+    }
+    this.followsCurrentMonth = false;
     this.loadExpenses();
   }
 
@@ -305,6 +324,19 @@ export class GastosComponent implements OnInit, OnDestroy {
   private buildQuery() {
     const responsible = this.responsibleUserId().trim();
     const period = this.period();
+    if (this.useCustomRange()) {
+      return {
+        accountScope: this.accountScope(),
+        responsibleUserId: responsible || undefined,
+        search: this.searchTerm().trim() || undefined,
+        year: period.year,
+        month: period.month,
+        startDate: this.customStartDate(),
+        endDate: this.customEndDate(),
+        limit: 500,
+      };
+    }
+
     return {
       accountScope: this.accountScope(),
       responsibleUserId: responsible || undefined,
@@ -315,9 +347,26 @@ export class GastosComponent implements OnInit, OnDestroy {
     };
   }
 
-  private applyListResponse(list: { totalGastos: number; itens: ExpenseListItem[] }): void {
+  private applyListResponse(list: {
+    totalGastos: number;
+    itens: ExpenseListItem[];
+    ano: number;
+    mes: number;
+    diaInicioCiclo?: number;
+    periodoInicio?: string;
+    periodoFim?: string;
+  }): void {
     this.totalGastos.set(list.totalGastos);
     this.items.set(list.itens);
+    this.periodLabel.set(
+      formatPeriodDisplay({
+        year: list.ano,
+        month: list.mes,
+        diaInicioCiclo: list.diaInicioCiclo,
+        periodoInicio: list.periodoInicio,
+        periodoFim: list.periodoFim,
+      }),
+    );
   }
 
   private syncEntryAccountScopeFromFilter(): void {

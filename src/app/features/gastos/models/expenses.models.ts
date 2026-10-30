@@ -26,6 +26,9 @@ export interface ExpensesListResponse {
   quantidade: number;
   ano: number;
   mes: number;
+  diaInicioCiclo?: number;
+  periodoInicio?: string;
+  periodoFim?: string;
   itens: ExpenseListItem[];
 }
 
@@ -47,5 +50,7 @@ export interface ExpensesQuery {
   search?: string;
   year?: number;
   month?: number;
+  startDate?: string;
+  endDate?: string;
   limit?: number;
 }

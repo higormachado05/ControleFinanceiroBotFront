@@ -14,6 +14,7 @@ import { forkJoin, Subscription } from 'rxjs';
 import { buildCategoryBreakdown } from '../../core/utils/category-breakdown.utils';
 import { DashboardRefreshService } from '../../core/services/dashboard-refresh.service';
 import { MonthChangeService } from '../../core/services/month-change.service';
+import { UserPreferencesService } from '../../core/services/user-preferences.service';
 import {
   formatCurrency,
   formatDate,
@@ -26,9 +27,8 @@ import { ExpensesFilterOptions } from '../gastos/models/expenses.models';
 import { TransactionsService } from '../transactions/transactions.service';
 import { EntryAccountScope, TransactionCategoryOption } from '../transactions/models/transaction.models';
 import {
-  currentMonthPeriod,
-  formatMonthLabel,
-  isAfterMonth,
+  currentReferencePeriod,
+  formatPeriodDisplay,
   isSameMonth,
   MonthPeriod,
   parseMonthInputValue,
@@ -57,6 +57,7 @@ export class ReceitasComponent implements OnInit, OnDestroy {
   private readonly transactionsService = inject(TransactionsService);
   private readonly dashboardRefresh = inject(DashboardRefreshService);
   private readonly monthChange = inject(MonthChangeService);
+  private readonly userPreferences = inject(UserPreferencesService);
   private readonly entryFormSection = viewChild<ElementRef<HTMLElement>>('entryFormSection');
 
   protected readonly loading = signal(true);
@@ -68,7 +69,11 @@ export class ReceitasComponent implements OnInit, OnDestroy {
   protected readonly summary = signal<DashboardSummary | null>(null);
   protected readonly transactions = signal<RecentTransaction[]>([]);
   protected readonly isCompactList = signal(false);
-  protected readonly period = signal<MonthPeriod>(currentMonthPeriod());
+  protected readonly period = signal<MonthPeriod>(currentReferencePeriod(1));
+  protected readonly useCustomRange = signal(false);
+  protected readonly customStartDate = signal('');
+  protected readonly customEndDate = signal('');
+  protected readonly periodLabel = signal('');
 
   private refreshSubscription?: Subscription;
   private monthSubscription?: Subscription;
@@ -106,12 +111,8 @@ export class ReceitasComponent implements OnInit, OnDestroy {
 
   protected readonly formatCurrency = formatCurrency;
   protected readonly formatDate = formatDate;
-  protected readonly monthLabel = computed(() => {
-    const period = this.period();
-    return formatMonthLabel(period.year, period.month);
-  });
+  protected readonly monthLabel = computed(() => this.periodLabel());
   protected readonly monthInputValue = computed(() => toMonthInputValue(this.period()));
-  protected readonly maxMonth = computed(() => toMonthInputValue(this.monthChange.currentMonth()));
   protected readonly transactionMeta = transactionMeta;
   protected readonly signedAmount = signedAmount;
 
@@ -119,7 +120,6 @@ export class ReceitasComponent implements OnInit, OnDestroy {
   protected readonly entryValor = signal('');
   protected readonly entryCategoria = signal('Outros');
   protected readonly entryData = signal(this.todayDateInput());
-  protected readonly entryMaxDate = this.todayDateInput();
   protected readonly entryAccountScope = signal<EntryAccountScope>('personal');
   protected readonly editingIncomeId = signal<string | null>(null);
 
@@ -142,11 +142,12 @@ export class ReceitasComponent implements OnInit, OnDestroy {
   );
 
   ngOnInit(): void {
+    this.period.set(currentReferencePeriod(this.userPreferences.financialCycleStartDay()));
     this.bindMobileList();
     this.loadData();
     this.refreshSubscription = this.dashboardRefresh.onRefresh$.subscribe(() => this.loadData(true));
     this.monthSubscription = this.monthChange.monthChanged$.subscribe((period) => {
-      if (!this.followsCurrentMonth) {
+      if (!this.followsCurrentMonth || this.useCustomRange()) {
         return;
       }
       this.period.set({ year: period.year, month: period.month });
@@ -161,9 +162,12 @@ export class ReceitasComponent implements OnInit, OnDestroy {
   }
 
   onMonthInput(value: string): void {
-    const current = this.monthChange.currentMonth();
+    if (this.useCustomRange()) {
+      return;
+    }
+
     const parsed = parseMonthInputValue(value);
-    if (!parsed || isAfterMonth(parsed, current)) {
+    if (!parsed) {
       this.period.set({ ...this.period() });
       return;
     }
@@ -172,8 +176,23 @@ export class ReceitasComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.followsCurrentMonth = isSameMonth(parsed, current);
+    this.followsCurrentMonth = isSameMonth(parsed, this.monthChange.currentMonth());
     this.period.set(parsed);
+    this.loadData();
+  }
+
+  onCustomRangeToggle(enabled: boolean): void {
+    this.useCustomRange.set(enabled);
+    if (!enabled) {
+      this.loadData();
+    }
+  }
+
+  applyCustomRange(): void {
+    if (!this.customStartDate() || !this.customEndDate()) {
+      return;
+    }
+    this.followsCurrentMonth = false;
     this.loadData();
   }
 
@@ -273,15 +292,24 @@ export class ReceitasComponent implements OnInit, OnDestroy {
     }
     this.error.set(null);
 
-    const period = this.period();
+    const query = this.buildPeriodQuery();
     forkJoin({
-      summary: this.dashboardService.getSummary(undefined, period),
-      transactions: this.dashboardService.getRecentTransactions(undefined, LIST_FETCH_LIMIT, period),
+      summary: this.dashboardService.getSummary(undefined, query),
+      transactions: this.dashboardService.getRecentTransactions(undefined, LIST_FETCH_LIMIT, query),
       options: this.expensesService.getFilterOptions(),
       categories: this.transactionsService.getCategories(),
     }).subscribe({
       next: ({ summary, transactions, options, categories }) => {
         this.summary.set(summary);
+        this.periodLabel.set(
+          formatPeriodDisplay({
+            year: summary.ano,
+            month: summary.mes,
+            diaInicioCiclo: summary.diaInicioCiclo,
+            periodoInicio: summary.periodoInicio,
+            periodoFim: summary.periodoFim,
+          }),
+        );
         this.transactions.set(transactions);
         this.filterOptions.set(options);
         this.categories.set(categories);
@@ -294,6 +322,19 @@ export class ReceitasComponent implements OnInit, OnDestroy {
         this.error.set('Não foi possível carregar suas receitas. Tente novamente.');
       },
     });
+  }
+
+  private buildPeriodQuery() {
+    const period = this.period();
+    if (this.useCustomRange()) {
+      return {
+        year: period.year,
+        month: period.month,
+        startDate: this.customStartDate(),
+        endDate: this.customEndDate(),
+      };
+    }
+    return { year: period.year, month: period.month };
   }
 
   private syncEntryAccountScope(options: ExpensesFilterOptions): void {

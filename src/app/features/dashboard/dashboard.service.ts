@@ -2,7 +2,8 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { MonthPeriod } from '../../core/utils/month.utils';
+import { PeriodQuery } from '../../core/models/financial-period.models';
+import { appendPeriodParams } from '../../core/utils/period-query.utils';
 import { DashboardSummary, RecentTransaction } from './models/dashboard.models';
 
 @Injectable({ providedIn: 'root' })
@@ -10,7 +11,7 @@ export class DashboardService {
   private readonly http = inject(HttpClient);
   private readonly dashboardUrl = `${environment.apiUrl}/api/dashboard`;
 
-  getSummary(financialAccountId?: string, period?: MonthPeriod): Observable<DashboardSummary> {
+  getSummary(financialAccountId?: string, period?: PeriodQuery): Observable<DashboardSummary> {
     return this.http.get<DashboardSummary>(`${this.dashboardUrl}/summary`, {
       params: this.buildParams(financialAccountId, period),
     });
@@ -19,7 +20,7 @@ export class DashboardService {
   getRecentTransactions(
     financialAccountId?: string,
     limit = 10,
-    period?: MonthPeriod,
+    period?: PeriodQuery,
   ): Observable<RecentTransaction[]> {
     let params = this.buildParams(financialAccountId, period);
     params = params.set('limit', limit.toString());
@@ -29,14 +30,11 @@ export class DashboardService {
     });
   }
 
-  private buildParams(financialAccountId?: string, period?: MonthPeriod): HttpParams {
+  private buildParams(financialAccountId?: string, period?: PeriodQuery): HttpParams {
     let params = new HttpParams();
     if (financialAccountId) {
       params = params.set('financialAccountId', financialAccountId);
     }
-    if (period) {
-      params = params.set('year', period.year.toString()).set('month', period.month.toString());
-    }
-    return params;
+    return appendPeriodParams(params, period);
   }
 }

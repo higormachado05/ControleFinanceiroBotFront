@@ -2,6 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { appendPeriodParams } from '../../core/utils/period-query.utils';
 import {
   ExpensesFilterOptions,
   ExpensesListResponse,
@@ -30,9 +31,7 @@ export class ExpensesService {
       params = params.set('search', query.search.trim());
     }
 
-    if (query.year && query.month) {
-      params = params.set('year', query.year.toString()).set('month', query.month.toString());
-    }
+    params = appendPeriodParams(params, query);
 
     return this.http.get<ExpensesListResponse>(this.baseUrl, { params });
   }

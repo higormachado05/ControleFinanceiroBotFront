@@ -3,10 +3,11 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { forkJoin, Subscription } from 'rxjs';
 import { MonthChangeService } from '../../core/services/month-change.service';
+import { UserPreferencesService } from '../../core/services/user-preferences.service';
 import { formatCurrency } from '../../core/utils/format.utils';
 import {
-  currentMonthPeriod,
-  formatMonthLabel,
+  currentReferencePeriod,
+  formatPeriodDisplay,
   isSameMonth,
   MonthPeriod,
   parseMonthInputValue,
@@ -30,6 +31,7 @@ import { PlanningService } from './planning.service';
 export class PlanejamentoComponent implements OnInit, OnDestroy {
   private readonly planningService = inject(PlanningService);
   private readonly monthChange = inject(MonthChangeService);
+  private readonly userPreferences = inject(UserPreferencesService);
 
   protected readonly loading = signal(true);
   protected readonly saving = signal(false);
@@ -39,7 +41,8 @@ export class PlanejamentoComponent implements OnInit, OnDestroy {
   protected readonly setupOptions = signal<PlanningSetupOptions | null>(null);
 
   protected readonly accountScope = signal<PlanningAccountScope>('all');
-  protected readonly period = signal<MonthPeriod>(currentMonthPeriod());
+  protected readonly period = signal<MonthPeriod>(currentReferencePeriod(1));
+  protected readonly periodLabel = signal('');
 
   protected readonly fixedDescricao = signal('');
   protected readonly fixedValor = signal('');
@@ -54,10 +57,7 @@ export class PlanejamentoComponent implements OnInit, OnDestroy {
   private followsCurrentMonth = true;
 
   protected readonly formatCurrency = formatCurrency;
-  protected readonly monthLabel = computed(() => {
-    const period = this.period();
-    return formatMonthLabel(period.year, period.month);
-  });
+  protected readonly monthLabel = computed(() => this.periodLabel());
   protected readonly monthInputValue = computed(() => toMonthInputValue(this.period()));
 
   protected readonly hasFinancialAccounts = computed(
@@ -98,6 +98,7 @@ export class PlanejamentoComponent implements OnInit, OnDestroy {
   });
 
   ngOnInit(): void {
+    this.period.set(currentReferencePeriod(this.userPreferences.financialCycleStartDay()));
     this.loadInitialData();
     this.monthSubscription = this.monthChange.monthChanged$.subscribe((period) => {
       if (!this.followsCurrentMonth) {
@@ -287,6 +288,15 @@ export class PlanejamentoComponent implements OnInit, OnDestroy {
     this.planningService.getSummary(this.buildQuery()).subscribe({
       next: (summary) => {
         this.summary.set(summary);
+        this.periodLabel.set(
+          formatPeriodDisplay({
+            year: summary.ano,
+            month: summary.mes,
+            diaInicioCiclo: summary.diaInicioCiclo,
+            periodoInicio: summary.periodoInicio,
+            periodoFim: summary.periodoFim,
+          }),
+        );
         this.loading.set(false);
       },
       error: () => {

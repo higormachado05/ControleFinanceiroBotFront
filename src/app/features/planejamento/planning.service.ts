@@ -2,6 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { appendPeriodParams } from '../../core/utils/period-query.utils';
 import {
   CreatePlanningFixedExpenseRequest,
   PlanningFixedExpense,
@@ -23,9 +24,7 @@ export class PlanningService {
   getSummary(query: PlanningSummaryQuery): Observable<PlanningSummary> {
     let params = new HttpParams().set('accountScope', query.accountScope);
 
-    if (query.year && query.month) {
-      params = params.set('year', query.year.toString()).set('month', query.month.toString());
-    }
+    params = appendPeriodParams(params, query);
 
     return this.http.get<PlanningSummary>(`${this.baseUrl}/summary`, { params });
   }

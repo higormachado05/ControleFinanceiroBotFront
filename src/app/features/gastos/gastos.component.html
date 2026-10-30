@@ -23,16 +23,35 @@
       </div>
       <div class="ledger-hero__aside">
         <label class="gastos-filters__field">
-          <span class="gastos-filters__label">Mês</span>
+          <span class="gastos-filters__label">Mês de referência</span>
           <input
             class="gastos-filters__input"
             type="month"
             min="2020-01"
-            [max]="maxMonth()"
+            [disabled]="useCustomRange()"
             [ngModel]="monthInputValue()"
             (ngModelChange)="onMonthInput($event)"
           />
         </label>
+        <label class="gastos-filters__field period-custom-toggle">
+          <input
+            type="checkbox"
+            [ngModel]="useCustomRange()"
+            (ngModelChange)="onCustomRangeToggle($event)"
+          />
+          <span>Período personalizado</span>
+        </label>
+        @if (useCustomRange()) {
+          <label class="gastos-filters__field">
+            <span class="gastos-filters__label">De</span>
+            <input class="gastos-filters__input" type="date" [ngModel]="customStartDate()" (ngModelChange)="customStartDate.set($event)" />
+          </label>
+          <label class="gastos-filters__field">
+            <span class="gastos-filters__label">Até</span>
+            <input class="gastos-filters__input" type="date" [ngModel]="customEndDate()" (ngModelChange)="customEndDate.set($event)" />
+          </label>
+          <button class="btn btn--ghost btn--sm" type="button" (click)="applyCustomRange()">Aplicar</button>
+        }
         <p class="ledger-hero__note">
           O total segue o mês, a conta e o responsável selecionados.
         </p>
@@ -109,7 +128,6 @@
           <span>Data</span>
           <input
             type="date"
-            [max]="entryMaxDate"
             [ngModel]="entryData()"
             (ngModelChange)="entryData.set($event)"
             name="entryExpenseData"
