@@ -24,16 +24,13 @@
         </div>
 
         <div class="ledger-hero__aside">
-          <label class="gastos-filters__field">
-            <span class="gastos-filters__label">Mês de referência</span>
-            <input
-              class="gastos-filters__input"
-              type="month"
-              min="2020-01"
-              [ngModel]="monthInputValue()"
-              (ngModelChange)="onMonthInput($event)"
-            />
-          </label>
+          <app-period-view-controls
+            [monthValue]="monthInputValue()"
+            [cycleStartDay]="cycleStartDay()"
+            [viewingCurrentPeriod]="viewingCurrentPeriod()"
+            (monthValueChange)="onMonthInput($event)"
+            (goToCurrentPeriod)="goToCurrentPeriod()"
+          />
           @if (showAccountScopeFilter()) {
             <label class="gastos-filters__field">
               <span class="gastos-filters__label">Visão</span>

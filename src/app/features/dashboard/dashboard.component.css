@@ -1,1 +1,30 @@
-/* Layout styles: src/app/shared/styles/ledger.css */
+.balance-hero__aside {
+  align-items: stretch;
+  width: min(100%, 17.5rem);
+}
+
+.period-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  width: 100%;
+}
+
+.period-panel__heading {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.period-panel__metrics {
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--color-border);
+}
+
+@media (max-width: 960px) {
+  .balance-hero__aside {
+    width: 100%;
+  }
+}

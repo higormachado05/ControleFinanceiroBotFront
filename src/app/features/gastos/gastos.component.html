@@ -22,38 +22,15 @@
         </p>
       </div>
       <div class="ledger-hero__aside">
-        <label class="gastos-filters__field">
-          <span class="gastos-filters__label">Mês de referência</span>
-          <input
-            class="gastos-filters__input"
-            type="month"
-            min="2020-01"
-            [disabled]="useCustomRange()"
-            [ngModel]="monthInputValue()"
-            (ngModelChange)="onMonthInput($event)"
-          />
-        </label>
-        <label class="gastos-filters__field period-custom-toggle">
-          <input
-            type="checkbox"
-            [ngModel]="useCustomRange()"
-            (ngModelChange)="onCustomRangeToggle($event)"
-          />
-          <span>Período personalizado</span>
-        </label>
-        @if (useCustomRange()) {
-          <label class="gastos-filters__field">
-            <span class="gastos-filters__label">De</span>
-            <input class="gastos-filters__input" type="date" [ngModel]="customStartDate()" (ngModelChange)="customStartDate.set($event)" />
-          </label>
-          <label class="gastos-filters__field">
-            <span class="gastos-filters__label">Até</span>
-            <input class="gastos-filters__input" type="date" [ngModel]="customEndDate()" (ngModelChange)="customEndDate.set($event)" />
-          </label>
-          <button class="btn btn--ghost btn--sm" type="button" (click)="applyCustomRange()">Aplicar</button>
-        }
+        <app-period-view-controls
+          [monthValue]="monthInputValue()"
+          [cycleStartDay]="cycleStartDay()"
+          [viewingCurrentPeriod]="viewingCurrentPeriod()"
+          (monthValueChange)="onMonthInput($event)"
+          (goToCurrentPeriod)="goToCurrentPeriod()"
+        />
         <p class="ledger-hero__note">
-          O total segue o mês, a conta e o responsável selecionados.
+          O total segue o ciclo de fechamento, a conta e o responsável selecionados.
         </p>
       </div>
     </section>

@@ -22,6 +22,11 @@ export function toMonthInputValue(period: MonthPeriod): string {
   return `${period.year}-${String(period.month).padStart(2, '0')}`;
 }
 
+export function shiftMonthPeriod(period: MonthPeriod, deltaMonths: number): MonthPeriod {
+  const anchor = new Date(Date.UTC(period.year, period.month - 1 + deltaMonths, 1));
+  return { year: anchor.getUTCFullYear(), month: anchor.getUTCMonth() + 1 };
+}
+
 export function parseMonthInputValue(value: string): MonthPeriod | null {
   const match = /^(\d{4})-(\d{2})$/.exec(value);
   if (!match) {

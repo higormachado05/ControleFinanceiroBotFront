@@ -90,14 +90,6 @@
   width: min(100%, 12rem);
 }
 
-.period-custom-toggle {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  font-size: var(--text-sm);
-  color: var(--color-text-muted);
-}
-
 .balance-hero__metrics {
   display: flex;
   gap: var(--space-8);

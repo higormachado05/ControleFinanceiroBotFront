@@ -5,14 +5,16 @@
     </div>
   } @else {
     <section class="gf-panel preferences-panel" aria-label="Preferências financeiras">
-      <h1 class="preferences-panel__title">Preferências</h1>
+      <h1 class="preferences-panel__title">Fechamento da conta</h1>
       <p class="preferences-panel__lead">
-        Defina quando começa o seu mês financeiro. Com dia 1, os totais seguem o calendário.
-        Com outro dia (ex.: 5), o período vai do dia escolhido até o dia anterior no mês seguinte.
+        Escolha o dia em que sua conta “fecha” e começa um novo ciclo. Ex.: dia 5 — de 5 deste mês
+        a 4 do próximo. Lançamentos entram no ciclo conforme a data do registro; sem data, vale o
+        período atual. Nas telas de gastos e dashboard, o seletor de mês serve só para consultar
+        ciclos anteriores ou futuros.
       </p>
 
       <label class="gastos-filters__field preferences-panel__field">
-        <span class="gastos-filters__label">Dia de início do ciclo</span>
+        <span class="gastos-filters__label">Dia de fechamento</span>
         <input
           class="gastos-filters__input"
           type="number"

@@ -10,9 +10,11 @@ import {
   formatPeriodDisplay,
   isSameMonth,
   MonthPeriod,
+  normalizeCycleStartDay,
   parseMonthInputValue,
   toMonthInputValue,
 } from '../../core/utils/month.utils';
+import { PeriodViewControlsComponent } from '../../shared/components/period-view-controls/period-view-controls.component';
 import {
   CreatePlanningFixedExpenseRequest,
   PlanningAccountScope,
@@ -24,7 +26,7 @@ import { PlanningService } from './planning.service';
 
 @Component({
   selector: 'app-planejamento',
-  imports: [FormsModule, RouterLink],
+  imports: [FormsModule, RouterLink, PeriodViewControlsComponent],
   templateUrl: './planejamento.component.html',
   styleUrl: './planejamento.component.css',
 })
@@ -54,11 +56,17 @@ export class PlanejamentoComponent implements OnInit, OnDestroy {
   protected readonly variableAccountId = signal('');
 
   private monthSubscription?: Subscription;
-  private followsCurrentMonth = true;
+  private followsCurrentPeriod = true;
 
   protected readonly formatCurrency = formatCurrency;
   protected readonly monthLabel = computed(() => this.periodLabel());
   protected readonly monthInputValue = computed(() => toMonthInputValue(this.period()));
+  protected readonly cycleStartDay = computed(() =>
+    normalizeCycleStartDay(this.userPreferences.financialCycleStartDay()),
+  );
+  protected readonly viewingCurrentPeriod = computed(() =>
+    isSameMonth(this.period(), currentReferencePeriod(this.cycleStartDay())),
+  );
 
   protected readonly hasFinancialAccounts = computed(
     () => (this.setupOptions()?.contas.length ?? 0) > 0,
@@ -101,7 +109,7 @@ export class PlanejamentoComponent implements OnInit, OnDestroy {
     this.period.set(currentReferencePeriod(this.userPreferences.financialCycleStartDay()));
     this.loadInitialData();
     this.monthSubscription = this.monthChange.monthChanged$.subscribe((period) => {
-      if (!this.followsCurrentMonth) {
+      if (!this.followsCurrentPeriod) {
         return;
       }
       this.period.set({ year: period.year, month: period.month });
@@ -129,8 +137,15 @@ export class PlanejamentoComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.followsCurrentMonth = isSameMonth(parsed, this.monthChange.currentMonth());
+    const current = currentReferencePeriod(this.cycleStartDay());
+    this.followsCurrentPeriod = isSameMonth(parsed, current);
     this.period.set(parsed);
+    this.loadSummary();
+  }
+
+  goToCurrentPeriod(): void {
+    this.followsCurrentPeriod = true;
+    this.period.set(currentReferencePeriod(this.cycleStartDay()));
     this.loadSummary();
   }
 

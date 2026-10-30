@@ -1,16 +1,15 @@
 import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
 import { forkJoin, Subscription } from 'rxjs';
 import { buildCategoryBreakdown } from '../../core/utils/category-breakdown.utils';
 import { DashboardRefreshService } from '../../core/services/dashboard-refresh.service';
 import { MonthChangeService } from '../../core/services/month-change.service';
 import { formatCurrency, formatDate, isReceita } from '../../core/utils/format.utils';
-import { PeriodQuery } from '../../core/models/financial-period.models';
 import {
   currentReferencePeriod,
   formatPeriodDisplay,
   isSameMonth,
   MonthPeriod,
+  normalizeCycleStartDay,
   parseMonthInputValue,
   toMonthInputValue,
 } from '../../core/utils/month.utils';
@@ -19,6 +18,7 @@ import {
   signedAmount,
   transactionMeta,
 } from '../../core/utils/transaction-display.utils';
+import { PeriodViewControlsComponent } from '../../shared/components/period-view-controls/period-view-controls.component';
 import { DashboardService } from './dashboard.service';
 import { DashboardSummary, RecentTransaction } from './models/dashboard.models';
 
@@ -27,7 +27,7 @@ const DASHBOARD_EXPENSES_LIMIT = 3;
 
 @Component({
   selector: 'app-dashboard',
-  imports: [FormsModule],
+  imports: [PeriodViewControlsComponent],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css',
 })
@@ -41,17 +41,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
   protected readonly error = signal<string | null>(null);
   protected readonly summary = signal<DashboardSummary | null>(null);
   protected readonly transactions = signal<RecentTransaction[]>([]);
-  protected readonly period = signal<MonthPeriod>(
-    currentReferencePeriod(1),
-  );
-  protected readonly useCustomRange = signal(false);
-  protected readonly customStartDate = signal('');
-  protected readonly customEndDate = signal('');
+  protected readonly period = signal<MonthPeriod>(currentReferencePeriod(1));
   protected readonly periodLabel = signal('');
 
   private refreshSubscription?: Subscription;
   private monthSubscription?: Subscription;
-  private followsCurrentMonth = true;
+  private followsCurrentPeriod = true;
 
   protected readonly recentExpenses = computed(() =>
     this.transactions()
@@ -69,15 +64,26 @@ export class DashboardComponent implements OnInit, OnDestroy {
   protected readonly signedAmount = signedAmount;
   protected readonly monthInputValue = computed(() => toMonthInputValue(this.period()));
   protected readonly monthLabel = computed(() => this.periodLabel());
+  protected readonly cycleStartDay = computed(() =>
+    normalizeCycleStartDay(this.userPreferences.financialCycleStartDay()),
+  );
+  protected readonly viewingCurrentPeriod = computed(() => {
+    const current = currentReferencePeriod(this.cycleStartDay());
+    const viewed = this.period();
+    return isSameMonth(viewed, current);
+  });
+  protected readonly balanceLabel = computed(() =>
+    this.cycleStartDay() === 1 ? 'Saldo do mês' : 'Saldo do período',
+  );
 
   ngOnInit(): void {
-    this.period.set(currentReferencePeriod(this.userPreferences.financialCycleStartDay()));
+    this.period.set(currentReferencePeriod(this.cycleStartDay()));
     this.loadDashboard();
     this.refreshSubscription = this.dashboardRefresh.onRefresh$.subscribe(() =>
       this.loadDashboard(true),
     );
     this.monthSubscription = this.monthChange.monthChanged$.subscribe((period) => {
-      if (!this.followsCurrentMonth || this.useCustomRange()) {
+      if (!this.followsCurrentPeriod) {
         return;
       }
       this.period.set({ year: period.year, month: period.month });
@@ -91,10 +97,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   onMonthInput(value: string): void {
-    if (this.useCustomRange()) {
-      return;
-    }
-
     const parsed = parseMonthInputValue(value);
     if (!parsed) {
       this.period.set({ ...this.period() });
@@ -105,25 +107,16 @@ export class DashboardComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.followsCurrentMonth = isSameMonth(parsed, this.monthChange.currentMonth());
+    const current = currentReferencePeriod(this.cycleStartDay());
+    this.followsCurrentPeriod = isSameMonth(parsed, current);
     this.period.set(parsed);
     this.loadDashboard();
   }
 
-  onCustomRangeToggle(enabled: boolean): void {
-    this.useCustomRange.set(enabled);
-    if (enabled) {
-      this.followsCurrentMonth = false;
-      return;
-    }
-    this.loadDashboard();
-  }
-
-  applyCustomRange(): void {
-    if (!this.customStartDate() || !this.customEndDate()) {
-      return;
-    }
-    this.followsCurrentMonth = false;
+  goToCurrentPeriod(): void {
+    const current = currentReferencePeriod(this.cycleStartDay());
+    this.followsCurrentPeriod = true;
+    this.period.set(current);
     this.loadDashboard();
   }
 
@@ -133,14 +126,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
     this.error.set(null);
 
-    const query = this.buildPeriodQuery();
+    const period = this.period();
 
     forkJoin({
-      summary: this.dashboardService.getSummary(undefined, query),
+      summary: this.dashboardService.getSummary(undefined, period),
       transactions: this.dashboardService.getRecentTransactions(
         undefined,
         MOVEMENTS_FETCH_LIMIT,
-        query,
+        period,
       ),
     }).subscribe({
       next: ({ summary, transactions }) => {
@@ -164,19 +157,5 @@ export class DashboardComponent implements OnInit, OnDestroy {
         );
       },
     });
-  }
-
-  private buildPeriodQuery(): PeriodQuery {
-    if (this.useCustomRange()) {
-      return {
-        year: this.period().year,
-        month: this.period().month,
-        startDate: this.customStartDate(),
-        endDate: this.customEndDate(),
-      };
-    }
-
-    const period = this.period();
-    return { year: period.year, month: period.month };
   }
 }

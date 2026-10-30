@@ -31,9 +31,11 @@ import {
   formatPeriodDisplay,
   isSameMonth,
   MonthPeriod,
+  normalizeCycleStartDay,
   parseMonthInputValue,
   toMonthInputValue,
 } from '../../core/utils/month.utils';
+import { PeriodViewControlsComponent } from '../../shared/components/period-view-controls/period-view-controls.component';
 import {
   signedAmount,
   transactionMeta,
@@ -47,7 +49,7 @@ const MOBILE_MEDIA = '(max-width: 640px)';
 
 @Component({
   selector: 'app-receitas',
-  imports: [FormsModule],
+  imports: [FormsModule, PeriodViewControlsComponent],
   templateUrl: './receitas.component.html',
   styleUrl: './receitas.component.css',
 })
@@ -70,14 +72,11 @@ export class ReceitasComponent implements OnInit, OnDestroy {
   protected readonly transactions = signal<RecentTransaction[]>([]);
   protected readonly isCompactList = signal(false);
   protected readonly period = signal<MonthPeriod>(currentReferencePeriod(1));
-  protected readonly useCustomRange = signal(false);
-  protected readonly customStartDate = signal('');
-  protected readonly customEndDate = signal('');
   protected readonly periodLabel = signal('');
 
   private refreshSubscription?: Subscription;
   private monthSubscription?: Subscription;
-  private followsCurrentMonth = true;
+  private followsCurrentPeriod = true;
   private hasLoaded = false;
   private mobileMedia?: MediaQueryList;
   private readonly onMobileChange = (event: MediaQueryListEvent): void => {
@@ -115,6 +114,12 @@ export class ReceitasComponent implements OnInit, OnDestroy {
   protected readonly monthInputValue = computed(() => toMonthInputValue(this.period()));
   protected readonly transactionMeta = transactionMeta;
   protected readonly signedAmount = signedAmount;
+  protected readonly cycleStartDay = computed(() =>
+    normalizeCycleStartDay(this.userPreferences.financialCycleStartDay()),
+  );
+  protected readonly viewingCurrentPeriod = computed(() =>
+    isSameMonth(this.period(), currentReferencePeriod(this.cycleStartDay())),
+  );
 
   protected readonly entryDescricao = signal('');
   protected readonly entryValor = signal('');
@@ -147,7 +152,7 @@ export class ReceitasComponent implements OnInit, OnDestroy {
     this.loadData();
     this.refreshSubscription = this.dashboardRefresh.onRefresh$.subscribe(() => this.loadData(true));
     this.monthSubscription = this.monthChange.monthChanged$.subscribe((period) => {
-      if (!this.followsCurrentMonth || this.useCustomRange()) {
+      if (!this.followsCurrentPeriod) {
         return;
       }
       this.period.set({ year: period.year, month: period.month });
@@ -162,10 +167,6 @@ export class ReceitasComponent implements OnInit, OnDestroy {
   }
 
   onMonthInput(value: string): void {
-    if (this.useCustomRange()) {
-      return;
-    }
-
     const parsed = parseMonthInputValue(value);
     if (!parsed) {
       this.period.set({ ...this.period() });
@@ -176,23 +177,15 @@ export class ReceitasComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.followsCurrentMonth = isSameMonth(parsed, this.monthChange.currentMonth());
+    const current = currentReferencePeriod(this.cycleStartDay());
+    this.followsCurrentPeriod = isSameMonth(parsed, current);
     this.period.set(parsed);
     this.loadData();
   }
 
-  onCustomRangeToggle(enabled: boolean): void {
-    this.useCustomRange.set(enabled);
-    if (!enabled) {
-      this.loadData();
-    }
-  }
-
-  applyCustomRange(): void {
-    if (!this.customStartDate() || !this.customEndDate()) {
-      return;
-    }
-    this.followsCurrentMonth = false;
+  goToCurrentPeriod(): void {
+    this.followsCurrentPeriod = true;
+    this.period.set(currentReferencePeriod(this.cycleStartDay()));
     this.loadData();
   }
 
@@ -292,10 +285,10 @@ export class ReceitasComponent implements OnInit, OnDestroy {
     }
     this.error.set(null);
 
-    const query = this.buildPeriodQuery();
+    const period = this.period();
     forkJoin({
-      summary: this.dashboardService.getSummary(undefined, query),
-      transactions: this.dashboardService.getRecentTransactions(undefined, LIST_FETCH_LIMIT, query),
+      summary: this.dashboardService.getSummary(undefined, period),
+      transactions: this.dashboardService.getRecentTransactions(undefined, LIST_FETCH_LIMIT, period),
       options: this.expensesService.getFilterOptions(),
       categories: this.transactionsService.getCategories(),
     }).subscribe({
@@ -322,19 +315,6 @@ export class ReceitasComponent implements OnInit, OnDestroy {
         this.error.set('Não foi possível carregar suas receitas. Tente novamente.');
       },
     });
-  }
-
-  private buildPeriodQuery() {
-    const period = this.period();
-    if (this.useCustomRange()) {
-      return {
-        year: period.year,
-        month: period.month,
-        startDate: this.customStartDate(),
-        endDate: this.customEndDate(),
-      };
-    }
-    return { year: period.year, month: period.month };
   }
 
   private syncEntryAccountScope(options: ExpensesFilterOptions): void {
